@@ -1,0 +1,848 @@
+/* ==========================================================================
+   CADUTA LIBERA: IL GIOCO FINALE "LE DIECI BOTOLE"
+   Stile Broadcast Televisivo Premium
+   ========================================================================== */
+
+:root {
+  --bg-dark: #040814;
+  --panel-bg: rgba(7, 18, 42, 0.88);
+  --panel-border: rgba(0, 210, 255, 0.35);
+  --neon-cyan: #00d2ff;
+  --neon-blue: #0066ff;
+  --neon-gold: #ffd700;
+  --gold-glow: rgba(255, 215, 0, 0.45);
+  --danger-red: #ff2a44;
+  --danger-glow: rgba(255, 42, 68, 0.6);
+  --text-white: #ffffff;
+  --text-dim: #9cb1d4;
+  --font-main: 'Montserrat', sans-serif;
+  --font-display: 'Orbitron', monospace, sans-serif;
+  --font-tech: 'Rajdhani', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: var(--font-main);
+}
+
+/* --------------------------------------------------------------------------
+   VIEWPORT 3D DELLO STUDIO TELEVISIVO
+   -------------------------------------------------------------------------- */
+#viewport-3d {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   TOP HUD TELEVISIVO
+   -------------------------------------------------------------------------- */
+#top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 76px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: linear-gradient(180deg, rgba(4, 9, 23, 0.96) 0%, rgba(4, 9, 23, 0.75) 75%, transparent 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 210, 255, 0.25);
+}
+
+.brand-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-shield {
+  display: flex;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.45rem;
+  letter-spacing: 2px;
+}
+
+.logo-text-top {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.logo-text-bot {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.mode-tag {
+  font-family: var(--font-tech);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  color: var(--neon-gold);
+  text-transform: uppercase;
+}
+
+/* PANNONE MONTEPREMI IN PALIO */
+.hud-center-cluster {
+  display: flex;
+  align-items: center;
+}
+
+.montepremi-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(8, 22, 54, 0.85);
+  border: 2px solid var(--neon-gold);
+  border-radius: 12px;
+  padding: 5px 30px;
+  box-shadow: 0 0 25px var(--gold-glow), inset 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+.hud-label {
+  font-family: var(--font-tech);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.digital-currency {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #fffbdf;
+  text-shadow: 0 0 15px var(--neon-gold);
+}
+
+/* CONTROLLI IN ALTO A DESTRA */
+.quick-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.ctrl-btn {
+  background: rgba(14, 30, 68, 0.85);
+  border: 1px solid rgba(0, 210, 255, 0.4);
+  color: #e2eeff;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: var(--font-tech);
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ctrl-btn:hover {
+  background: var(--neon-blue);
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+.ctrl-btn.muted {
+  opacity: 0.55;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.lang-selector-box {
+  display: flex;
+  align-items: center;
+}
+
+.lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(14, 30, 68, 0.95) url("data:image/svg+xml;utf8,<svg fill='%2300d2ff' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 8px center;
+  padding-right: 26px;
+  cursor: pointer;
+  outline: none;
+  color: #fffbdf;
+  border-color: var(--neon-gold);
+}
+
+.lang-select option {
+  background: #071536;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   INTERFACCIA PRINCIPALE DEL GIOCO FINALE
+   -------------------------------------------------------------------------- */
+#main-finale-ui {
+  position: absolute;
+  top: 76px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 20px 24px;
+  pointer-events: none; /* Lascia passare click sul 3D tranne su elementi interattivi */
+}
+
+/* BANNER DI STATO TELEVISIVO */
+.status-banner {
+  pointer-events: all;
+  font-family: var(--font-tech);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  padding: 7px 26px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
+}
+
+.status-banner.intro {
+  background: linear-gradient(90deg, #092154, #0051ff);
+  border: 1.5px solid var(--neon-cyan);
+  color: #ffffff;
+}
+
+.status-banner.thinking {
+  background: linear-gradient(90deg, #b8860b, #ffd700);
+  border: 1.5px solid #ffffff;
+  color: #040919;
+  font-weight: 900;
+  animation: pulseGold 1.5s infinite;
+}
+
+.status-banner.locked {
+  background: linear-gradient(90deg, #99001f, #ff2a44);
+  border: 1.5px solid #ffffff;
+  color: #ffffff;
+  animation: pulseRed 1.2s infinite;
+}
+
+.status-banner.verdict {
+  background: linear-gradient(90deg, #7b0099, #d000ff);
+  border: 1.5px solid #ffffff;
+  color: #ffffff;
+  font-size: 1.05rem;
+}
+
+@keyframes pulseGold {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes pulseRed {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+/* SCHEDA DELLA DOMANDA CENTRALE */
+.finale-question-card {
+  pointer-events: all;
+  width: 95%;
+  max-width: 960px;
+  background: linear-gradient(180deg, rgba(8, 22, 54, 0.94) 0%, rgba(4, 12, 32, 0.96) 100%);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 16px;
+  box-shadow: 0 0 35px rgba(0, 210, 255, 0.25), inset 0 0 25px rgba(0, 210, 255, 0.08);
+  padding: 14px 24px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.question-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.category-pill {
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 4px 16px;
+  border-radius: 16px;
+  background: rgba(0, 210, 255, 0.2);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.hint-pill {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffeb99;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 4px 14px;
+  border-radius: 16px;
+}
+
+.question-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* STRIP TIMER 90S E TASTO CONFERMA */
+.timer-action-strip {
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 6px 0;
+}
+
+.timer-wrapper {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-circle-bg {
+  fill: rgba(6, 15, 38, 0.85);
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 8;
+}
+
+.timer-circle-fg {
+  fill: none;
+  stroke: var(--neon-gold);
+  stroke-width: 8;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s linear, stroke 0.3s ease;
+  filter: drop-shadow(0 0 8px var(--neon-gold));
+}
+
+.timer-circle-fg.urgent {
+  stroke: var(--danger-red);
+  filter: drop-shadow(0 0 12px var(--danger-red));
+}
+
+.timer-circle-fg.confront-mode {
+  stroke: var(--neon-cyan);
+  filter: drop-shadow(0 0 14px var(--neon-cyan));
+  animation: pulseConfrontCircle 2s infinite ease-in-out;
+}
+
+.timer-label-box {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-number {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.timer-number.urgent {
+  color: #ff334b;
+  animation: timerPanic 0.5s infinite alternate;
+}
+
+.timer-number.confront-mode {
+  color: #00d2ff;
+  font-size: 2.0rem;
+  letter-spacing: 2px;
+  text-shadow: 0 0 16px rgba(0, 210, 255, 0.8);
+  animation: pulseConfrontText 2s infinite ease-in-out;
+}
+
+@keyframes pulseConfrontCircle {
+  0%, 100% { stroke: #00d2ff; filter: drop-shadow(0 0 10px #00d2ff); }
+  50% { stroke: #ffd700; filter: drop-shadow(0 0 18px #ffd700); }
+}
+
+@keyframes pulseConfrontText {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.timer-sub {
+  font-family: var(--font-tech);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+@keyframes timerPanic {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+/* GRUPPO PULSANTI DINAMICI */
+.action-buttons-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.tv-action-btn {
+  border-radius: 14px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.tv-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.tv-action-btn:disabled {
+  opacity: 0.35;
+  filter: grayscale(1);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.tv-action-btn.primary {
+  background: linear-gradient(135deg, #e69d00 0%, #a86200 100%);
+  border: 2px solid var(--neon-gold);
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+}
+.tv-action-btn.primary:hover:not(:disabled) {
+  box-shadow: 0 6px 28px rgba(255, 215, 0, 0.7);
+}
+
+.tv-action-btn.keep {
+  background: linear-gradient(135deg, #008744 0%, #004d26 100%);
+  border: 2px solid #00ff88;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.35);
+}
+.tv-action-btn.keep:hover:not(:disabled) {
+  box-shadow: 0 6px 28px rgba(0, 255, 136, 0.65);
+}
+
+.tv-action-btn.change {
+  background: linear-gradient(135deg, #d32f2f 0%, #7b1111 100%);
+  border: 2px solid #ff5252;
+  box-shadow: 0 4px 20px rgba(255, 82, 82, 0.35);
+}
+.tv-action-btn.change:hover:not(:disabled) {
+  box-shadow: 0 6px 28px rgba(255, 82, 82, 0.65);
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+}
+
+.btn-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.btn-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+}
+
+.btn-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f2f6ff;
+  letter-spacing: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   TABELLONE DELLE 10 BOTOLE / OPZIONI (2 RIGHE DA 5)
+   -------------------------------------------------------------------------- */
+.options-board-container {
+  pointer-events: all;
+  width: 95%;
+  max-width: 1050px;
+  background: rgba(6, 16, 42, 0.9);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  border-radius: 16px;
+  padding: 12px 16px;
+  backdrop-filter: blur(10px);
+}
+
+.options-board-header {
+  font-family: var(--font-tech);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  text-align: center;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.option-tile {
+  position: relative;
+  background: linear-gradient(180deg, #0e224e 0%, #071330 100%);
+  border: 1.5px solid rgba(0, 210, 255, 0.35);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 80px;
+  justify-content: space-between;
+}
+
+.option-tile:hover:not(.eliminated) {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);
+  background: #14326e;
+}
+
+.tile-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--neon-blue);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--neon-cyan);
+}
+
+.tile-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 4px 0;
+  line-height: 1.25;
+}
+
+.tile-status {
+  font-family: var(--font-tech);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+/* OPZIONE SELEZIONATA DAL CAMPIONE */
+.option-tile.selected {
+  border-color: var(--neon-gold);
+  background: linear-gradient(180deg, #422d05 0%, #1a1200 100%);
+  box-shadow: 0 0 25px var(--gold-glow);
+  transform: translateY(-3px) scale(1.04);
+}
+
+.option-tile.selected .tile-number {
+  background: var(--neon-gold);
+  color: #040919;
+  border-color: #ffffff;
+}
+
+.option-tile.selected .tile-status {
+  color: var(--neon-gold);
+}
+
+/* OPZIONE ELIMINATA DA GERRY (BOTOLA APERTA NEL VUOTO) */
+.option-tile.eliminated {
+  opacity: 0.3;
+  filter: grayscale(1);
+  border-color: var(--danger-red);
+  background: #1a0408;
+  pointer-events: none;
+}
+
+.option-tile.eliminated .tile-status {
+  color: var(--danger-red);
+}
+
+/* OPZIONE DISPONIBILE PER IL CONFRONTO */
+.option-tile.confrontable {
+  border-color: #ff9900;
+  cursor: pointer;
+  animation: pulseConfront 1.5s infinite;
+}
+
+.option-tile.confrontable:hover {
+  transform: translateY(-5px) scale(1.05);
+  background: linear-gradient(180deg, #3d2300 0%, #1a0f00 100%);
+  border-color: #ffd700;
+  box-shadow: 0 0 25px rgba(255, 170, 0, 0.7);
+}
+
+.option-tile.confrontable .tile-status {
+  color: #ffaa00;
+  font-weight: 900;
+}
+
+@keyframes pulseConfront {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 153, 0, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(255, 153, 0, 0.75); }
+}
+
+/* BOTOLA SOTTO CONFRONTO ATTIVO */
+.option-tile.challenging {
+  border-color: #ffffff;
+  background: linear-gradient(180deg, #0055ff 0%, #002680 100%);
+  box-shadow: 0 0 30px #00d2ff;
+  transform: scale(1.06);
+}
+
+/* RIVELAZIONE BOTOLA ESATTA */
+.option-tile.correct-reveal {
+  border-color: #00ff88 !important;
+  background: linear-gradient(180deg, #004d26 0%, #002b15 100%) !important;
+  box-shadow: 0 0 30px #00ff88 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.option-tile.correct-reveal .tile-status {
+  color: #00ff88 !important;
+}
+
+/* --------------------------------------------------------------------------
+   MODALI
+   -------------------------------------------------------------------------- */
+.game-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.game-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(3, 7, 18, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.modal-dialog {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, rgba(8, 20, 48, 0.96) 0%, rgba(5, 12, 30, 0.98) 100%);
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 40px rgba(0, 210, 255, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+}
+
+.rules-dialog {
+  max-width: 650px;
+  width: 90%;
+  text-align: left;
+}
+
+.tv-subtitle {
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--neon-gold);
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.rules-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(11, 26, 61, 0.7);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #e2edff;
+}
+
+.rule-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  color: #040919;
+  font-family: var(--font-display);
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+/* MODAL RISULTATO FINALE */
+.end-dialog {
+  max-width: 620px;
+  width: 90%;
+}
+
+.end-title {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+
+.end-title.victory {
+  color: var(--neon-gold);
+  text-shadow: 0 0 30px var(--neon-gold);
+}
+
+.end-title.defeat {
+  color: var(--danger-red);
+  text-shadow: 0 0 25px var(--danger-red);
+}
+
+.end-desc {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #e2edff;
+  margin-bottom: 18px;
+}
+
+.end-detail-box {
+  background: rgba(11, 26, 61, 0.85);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #fffbdf;
+}
+
+.jackpot-amount {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fffbdf;
+  text-shadow: 0 0 20px var(--neon-gold);
+  display: block;
+  margin-top: 10px;
+}
+
+.tv-primary-btn {
+  background: linear-gradient(90deg, #0051ff, #00d2ff);
+  border: 2px solid #ffffff;
+  border-radius: 30px;
+  padding: 14px 40px;
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
+  transition: all 0.25s ease;
+}
+
+.tv-primary-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(0, 210, 255, 0.9);
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVITÀ PER SCHERMI PICCOLI
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  #top-bar {
+    height: 70px;
+    padding: 0 12px;
+  }
+  .logo-shield { font-size: 1.1rem; }
+  .montepremi-display { padding: 4px 14px; }
+  .digital-currency { font-size: 1.25rem; }
+  .options-grid { grid-template-columns: repeat(2, 1fr); }
+  .question-text { font-size: 1rem; }
+  .confirm-button { padding: 8px 18px; }
+}

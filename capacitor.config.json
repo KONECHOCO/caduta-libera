@@ -1,0 +1,9 @@
+{
+  "appId": "com.cadutalibera.stillstanding",
+  "appName": "Caduta Libera - Le Dieci Botole",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
