@@ -1,4 +1,4 @@
-// Sound Engine per Caduta Libera
+// Sound Engine per Trap10 Quiz
 // Generato interamente con Web Audio API: zero dipendenze esterne, zero lag!
 
 class SoundEngine {
@@ -149,7 +149,7 @@ class SoundEngine {
     }
   }
 
-  // Risposta Esatta! Tonalità trionfale stile Caduta Libera
+  // Risposta Esatta! Tonalità trionfale da quiz televisivo
   playCorrect() {
     if (this.isMuted || !this.ctx) return;
     this.stopTension();

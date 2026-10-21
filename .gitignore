@@ -5,7 +5,6 @@ desktop.ini
 
 # Node / Capacitor
 node_modules/
-package-lock.json
 
 # Logs
 *.log

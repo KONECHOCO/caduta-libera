@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CADUTA LIBERA: IL GIOCO FINALE "LE DIECI BOTOLE"
+   TRAP10 QUIZ
    Stile Broadcast Televisivo Premium
    ========================================================================== */
 
@@ -600,7 +600,7 @@ body, html {
   color: var(--neon-gold);
 }
 
-/* OPZIONE ELIMINATA DA GERRY (BOTOLA APERTA NEL VUOTO) */
+/* OPZIONE ELIMINATA (BOTOLA APERTA NEL VUOTO) */
 .option-tile.eliminated {
   opacity: 0.3;
   filter: grayscale(1);
@@ -801,6 +801,16 @@ body, html {
   color: #fffbdf;
 }
 
+.stats-line {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 210, 255, 0.25);
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--neon-gold);
+}
+
 .jackpot-amount {
   font-family: var(--font-display);
   font-size: 2.2rem;
@@ -832,8 +842,172 @@ body, html {
 }
 
 /* --------------------------------------------------------------------------
-   RESPONSIVITÀ PER SCHERMI PICCOLI
+   JOLLY, PRO, BANNER E DIAGNOSTICA ANNUNCI
    -------------------------------------------------------------------------- */
+.tv-action-btn.jolly {
+  background: linear-gradient(135deg, #5b2bd6 0%, #2a0f75 100%);
+  border: 2px solid #b48cff;
+  box-shadow: 0 4px 20px rgba(160, 110, 255, 0.4);
+}
+
+.pro-btn {
+  border-color: var(--neon-gold);
+  color: var(--neon-gold);
+}
+
+.pro-btn.owned {
+  background: linear-gradient(135deg, #b8860b, #ffd700);
+  color: #040919;
+}
+
+.pro-dialog {
+  max-width: 440px;
+  width: 92%;
+  border-color: var(--neon-gold);
+  box-shadow: 0 0 40px var(--gold-glow);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.pro-crown { font-size: 2.6rem; }
+
+.pro-subtitle {
+  color: #ffeb99;
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+}
+
+.pro-benefits {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pro-benefits li {
+  background: rgba(11, 26, 61, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+}
+
+.pro-status {
+  font-weight: 800;
+  color: #00ff88;
+  margin-bottom: 10px;
+}
+
+.pro-status:empty, .pro-message:empty { display: none; }
+
+.pro-buy-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #e69d00, #ffd700);
+  color: #040919;
+  box-shadow: 0 0 25px var(--gold-glow);
+}
+
+.pro-restore-btn {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pro-message {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #e2edff;
+}
+
+.web-ad-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 12px max(6px, env(safe-area-inset-bottom));
+  background: rgba(3, 7, 18, 0.95);
+  border-top: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.web-ad-bar[hidden], .ad-diag[hidden] { display: none; }
+
+.web-ad-pro-btn {
+  background: linear-gradient(90deg, #e69d00, #ffd700);
+  border: none;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-family: var(--font-tech);
+  font-weight: 800;
+  color: #040919;
+  cursor: pointer;
+}
+
+.ad-diag {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: calc(var(--ad-h, 0px) + 70px);
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid #ffb300;
+  border-radius: 10px;
+  font: 10px/1.35 monospace;
+  color: #ffe9b0;
+}
+
+.ad-diag-head {
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: #ffcc33;
+  font: bold 10px monospace;
+}
+
+.ad-diag-log {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 0 8px 6px;
+}
+
+/* Spazio riservato al banner (nativo o anteprima web) */
+#main-finale-ui {
+  bottom: var(--ad-h, 0px);
+}
+
+/* --------------------------------------------------------------------------
+   TABLET (iPad verticale)
+   -------------------------------------------------------------------------- */
+.digital-currency, .mode-tag, .logo-shield { white-space: nowrap; }
+
+#top-bar { padding-top: env(safe-area-inset-top); height: calc(76px + env(safe-area-inset-top)); }
+#main-finale-ui { top: calc(76px + env(safe-area-inset-top)); }
+
+@media (max-width: 1180px) {
+  .ctrl-btn .lbl { display: none; }
+  .ctrl-btn { padding: 7px 12px; font-size: 1rem; }
+}
+
 @media (max-width: 900px) {
   #top-bar {
     height: 70px;
@@ -842,7 +1016,162 @@ body, html {
   .logo-shield { font-size: 1.1rem; }
   .montepremi-display { padding: 4px 14px; }
   .digital-currency { font-size: 1.25rem; }
-  .options-grid { grid-template-columns: repeat(2, 1fr); }
-  .question-text { font-size: 1rem; }
-  .confirm-button { padding: 8px 18px; }
+  .question-text { font-size: 1.05rem; }
+  .ctrl-btn .lbl { display: none; }
+  .ctrl-btn { padding: 7px 10px; }
+}
+
+/* --------------------------------------------------------------------------
+   TELEFONO (verticale)
+   -------------------------------------------------------------------------- */
+@media (max-width: 700px) {
+  #top-bar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+  }
+  .brand-container { order: 1; }
+  .hud-center-cluster { order: 2; }
+  .hud-right-cluster { order: 3; width: 100%; }
+  .quick-controls { justify-content: space-between; gap: 6px; }
+  .quick-controls > * { flex: 1; }
+  .ctrl-btn { width: 100%; padding: 7px 0; font-size: 0.95rem; text-align: center; }
+  .lang-select { padding: 7px 18px 7px 6px; font-size: 0.8rem; background-position: right 2px center; }
+  .logo-shield { font-size: 1.05rem; gap: 5px; letter-spacing: 1px; }
+  .mode-tag { font-size: 0.6rem; letter-spacing: 1px; }
+  .montepremi-display { padding: 3px 12px; border-radius: 10px; }
+  .hud-label { font-size: 0.58rem; letter-spacing: 1px; }
+  .digital-currency { font-size: 1.15rem; }
+
+  #main-finale-ui {
+    top: calc(max(8px, env(safe-area-inset-top)) + 104px);
+    padding: 6px 8px 8px;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow-y: auto;
+  }
+  .status-banner {
+    font-size: 0.68rem;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+  .status-banner.verdict { font-size: 0.72rem; }
+  .finale-question-card { width: 100%; padding: 8px 10px; border-radius: 12px; }
+  .question-header { gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+  .category-pill { font-size: 0.65rem; padding: 2px 10px; }
+  .hint-pill { font-size: 0.66rem; padding: 2px 10px; }
+  .question-text { font-size: 0.95rem; line-height: 1.3; }
+
+  /* La zona centrale lascia vedere lo studio 3D */
+  .timer-action-strip {
+    flex: 1;
+    min-height: 120px;
+    width: 100%;
+    gap: 8px;
+    margin: 0;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .timer-wrapper { width: 64px; height: 64px; flex-shrink: 0; }
+  .timer-number { font-size: 1.35rem; }
+  .timer-number.confront-mode { font-size: 1.3rem; }
+  .timer-sub { font-size: 0.55rem; }
+  .action-buttons-group { flex: 1; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+  .tv-action-btn { padding: 7px 10px; gap: 6px; border-radius: 10px; flex: 1 1 140px; max-width: 260px; }
+  .tv-action-btn:hover:not(:disabled) { transform: none; }
+  .btn-icon { font-size: 1.1rem; }
+  .btn-title { font-size: 0.68rem; letter-spacing: 0.5px; }
+  .btn-sub { font-size: 0.55rem; letter-spacing: 0; }
+
+  .options-board-container { width: 100%; padding: 6px; border-radius: 12px; }
+  .options-board-header { font-size: 0.58rem; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .options-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+  .option-tile {
+    flex-direction: row;
+    min-height: 44px;
+    padding: 5px 7px;
+    gap: 7px;
+    text-align: left;
+    justify-content: flex-start;
+    border-radius: 8px;
+  }
+  .option-tile:hover:not(.eliminated),
+  .option-tile.selected,
+  .option-tile.challenging,
+  .option-tile.confrontable:hover { transform: none; }
+  .tile-number { width: 22px; height: 22px; font-size: 0.7rem; flex-shrink: 0; }
+  .tile-text { font-size: 0.72rem; margin: 0; line-height: 1.2; }
+  .tile-status { display: none; }
+
+  .modal-dialog { padding: 20px 16px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 1.25rem; }
+  .rule-item { font-size: 0.82rem; padding: 10px; }
+  .end-title { font-size: 1.7rem; }
+  .end-desc { font-size: 0.92rem; }
+  .end-detail-box { font-size: 0.82rem; }
+  .jackpot-amount { font-size: 1.6rem; }
+  .tv-primary-btn { padding: 12px 22px; font-size: 0.85rem; }
+}
+
+/* --------------------------------------------------------------------------
+   TELEFONI BASSI (es. 360×640): tutto il tabellone deve restare visibile
+   -------------------------------------------------------------------------- */
+@media (max-width: 700px) and (max-height: 760px) {
+  #top-bar { row-gap: 4px; padding-bottom: 5px; }
+  .mode-tag { display: none; }
+  .ctrl-btn { padding: 5px 0; }
+  #main-finale-ui { top: calc(max(8px, env(safe-area-inset-top)) + 80px); gap: 4px; padding-top: 4px; }
+  .status-banner { font-size: 0.6rem; padding: 3px 10px; }
+  .finale-question-card { padding: 5px 8px; }
+  .question-header { margin-bottom: 3px; }
+  .hint-pill { display: none !important; }
+  .question-text { font-size: 0.85rem; }
+  .timer-action-strip { min-height: 70px; }
+  .timer-wrapper { width: 54px; height: 54px; }
+  .timer-number { font-size: 1.1rem; }
+  .tv-action-btn { padding: 5px 8px; }
+  .options-board-header { display: none; }
+  .options-grid { gap: 4px; }
+  .option-tile { min-height: 34px; padding: 3px 6px; }
+  .tile-text { font-size: 0.68rem; }
+}
+
+/* --------------------------------------------------------------------------
+   TABLET GRANDI (iPad verticale): testi e tessere più grandi
+   -------------------------------------------------------------------------- */
+@media (min-width: 701px) and (min-height: 1100px) {
+  #top-bar { height: calc(96px + env(safe-area-inset-top)); padding-left: 28px; padding-right: 28px; }
+  #main-finale-ui { top: calc(96px + env(safe-area-inset-top)); padding: 20px 28px 28px; }
+  .logo-shield { font-size: 1.8rem; }
+  .mode-tag { font-size: 0.95rem; }
+  .digital-currency { font-size: 2rem; }
+  .ctrl-btn { font-size: 1.3rem; padding: 10px 16px; }
+  .status-banner { font-size: 1.15rem; padding: 10px 30px; }
+  .finale-question-card { padding: 22px 30px; }
+  .category-pill, .hint-pill { font-size: 1.05rem; padding: 6px 18px; }
+  .question-text { font-size: 1.75rem; }
+  .timer-wrapper { width: 120px; height: 120px; }
+  .timer-number { font-size: 2.6rem; }
+  .tv-action-btn { padding: 16px 30px; }
+  .btn-title { font-size: 1.2rem; }
+  .btn-sub { font-size: 0.85rem; }
+  .options-board-container { padding: 18px 20px; }
+  .options-board-header { font-size: 1rem; margin-bottom: 14px; }
+  .options-grid { gap: 14px; }
+  .option-tile { min-height: 130px; padding: 14px 10px; }
+  .tile-number { width: 38px; height: 38px; font-size: 1.1rem; }
+  .tile-text { font-size: 1.1rem; }
+  .tile-status { font-size: 0.85rem; }
+  .pro-dialog { max-width: 620px; }
+  .pro-benefits li { font-size: 1.15rem; padding: 14px 18px; }
+  .pro-subtitle { font-size: 1.2rem; }
+  .end-dialog { max-width: 760px; }
+  .end-title { font-size: 3.2rem; }
+  .end-desc { font-size: 1.35rem; }
+  .end-detail-box { font-size: 1.15rem; }
+  .tv-primary-btn { font-size: 1.25rem; padding: 18px 48px; }
 }

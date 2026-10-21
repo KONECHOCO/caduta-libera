@@ -1,9 +1,7 @@
 {
-  "appId": "com.cadutalibera.stillstanding",
-  "appName": "Caduta Libera - Le Dieci Botole",
-  "webDir": ".",
-  "bundledWebRuntime": false,
-  "server": {
-    "androidScheme": "https"
-  }
+  "appId": "com.ikonet.trap10",
+  "appName": "Trap10 Quiz",
+  "webDir": "dist",
+  "ios": { "contentInset": "never", "backgroundColor": "#040814" },
+  "android": { "backgroundColor": "#040814" }
 }

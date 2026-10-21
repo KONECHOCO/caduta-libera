@@ -1,4 +1,6 @@
-// Motore 3D per il gioco finale "LE DIECI BOTOLE" di Caduta Libera
+// Motore 3D dello studio di Trap10 Quiz
+
+import { i18n } from './i18n.js';
 // Renderizza l'arena circolare con le 10 botole delle 10 risposte, il Campione semovente e le eliminazioni spettacolari
 
 export class Studio3D {
@@ -169,7 +171,7 @@ export class Studio3D {
     this.championGroup.add(crown);
 
     // Cartello fluttuante 'IL CAMPIONE'
-    const nameSprite = this.createTextBadge("IL CAMPIONE", "#ffd700", "#081636");
+    const nameSprite = this.createTextBadge("★ TRAP10 ★", "#ffd700", "#081636");
     nameSprite.position.set(0, 2.5, 0);
     nameSprite.scale.set(2.2, 0.7, 1);
     this.championGroup.add(nameSprite);
@@ -353,16 +355,16 @@ export class Studio3D {
     ctx.font = 'bold 22px "Rajdhani", sans-serif';
     if (state === 'selected') {
       ctx.fillStyle = '#ffd700';
-      ctx.fillText('★ SCELTA DAL CAMPIONE ★', 120, 105);
+      ctx.fillText(i18n.t('board3dChosen'), 120, 105);
     } else if (state === 'eliminated') {
       ctx.fillStyle = '#ff3333';
-      ctx.fillText('✕ RISPOSTA ERRATA ✕', 120, 105);
+      ctx.fillText(i18n.t('board3dWrong'), 120, 105);
     } else if (state === 'winner') {
       ctx.fillStyle = '#00ff88';
-      ctx.fillText('✔ RISPOSTA ESATTA! VINTO!', 120, 105);
+      ctx.fillText(i18n.t('board3dRight'), 120, 105);
     } else {
       ctx.fillStyle = '#94a9cc';
-      ctx.fillText('BOTOLA ATTIVA', 120, 105);
+      ctx.fillText(i18n.t('board3dActive'), 120, 105);
     }
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -677,8 +679,15 @@ export class Studio3D {
   }
 
   // REGIA TELECAMERE
+  // Su schermo verticale (telefono) l'inquadratura orizzontale è stretta: la telecamera si allontana
+  portraitFactor() {
+    const a = this.camera.aspect;
+    return a < 1 ? Math.min(2.2, 0.95 / a) : 1;
+  }
+
   setCameraOverview() {
-    this.targetCameraPos.set(0, 24, 30);
+    const k = this.portraitFactor();
+    this.targetCameraPos.set(0, 24 * (0.6 + 0.4 * k), 30 * (0.6 + 0.4 * k));
     this.targetCameraLookAt.set(0, 0, 0);
   }
 
@@ -686,10 +695,12 @@ export class Studio3D {
     const botola = this.botole[botolaIndex];
     if (!botola) return;
     const bPos = botola.position;
+    const k = this.portraitFactor() - 1;
 
     // Telecamera ravvicinata sul Campione che presidia la botola
-    this.targetCameraPos.set(bPos.x * 0.55, 6.0, bPos.z * 0.55);
-    this.targetCameraLookAt.set(bPos.x, 1.8, bPos.z);
+    const f = 0.55 - 0.5 * k;
+    this.targetCameraPos.set(bPos.x * f, 6.0 + 6 * k, bPos.z * f);
+    this.targetCameraLookAt.set(bPos.x, 1.8 - k, bPos.z);
 
     this.tensionSpot.target = botola.group;
   }
@@ -698,8 +709,10 @@ export class Studio3D {
     const botola = this.botole[botolaIndex];
     if (!botola) return;
     const bPos = botola.position;
+    const k = this.portraitFactor() - 1;
 
-    this.targetCameraPos.set(bPos.x * 0.6, 7.5, bPos.z * 0.6);
+    const f = 0.6 - 0.5 * k;
+    this.targetCameraPos.set(bPos.x * f, 7.5 + 6 * k, bPos.z * f);
     this.targetCameraLookAt.set(bPos.x, 0.5, bPos.z);
   }
 

@@ -2,21 +2,18 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caduta Libera - Le Dieci Botole | Il Gioco Finale</title>
-  <meta name="description" content="Il gioco finale ufficiale di Caduta Libera: scegli una risposta tra le 10 botole dello studio per vincere il montepremi!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Trap10 Quiz</title>
+  <meta name="description" content="Trap10 Quiz: 10 risposte, 10 botole, una sola giusta. Scegli la botola esatta e resta in piedi!">
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,800;0,900;1,700&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
   
   <!-- Favicon SVG & App Icons per Mobile Store & PWA -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23040814' stroke='%2300d2ff' stroke-width='6'/><circle cx='50' cy='50' r='36' fill='%23071838' stroke='%23ffd700' stroke-width='4'/><text x='50' y='58' font-size='28' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>CL</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23040814' stroke='%2300d2ff' stroke-width='6'/><circle cx='50' cy='50' r='36' fill='%23071838' stroke='%23ffd700' stroke-width='4'/><text x='50' y='58' font-size='28' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>10</text></svg>">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Caduta Libera">
+  <meta name="apple-mobile-web-app-title" content="Trap10 Quiz">
   <meta name="theme-color" content="#040814">
   <meta name="mobile-web-app-capable" content="yes">
   
@@ -30,11 +27,11 @@
   <!-- HUD SUPERIORE TELEVISIVO (BROADCAST PACKAGE) -->
   <header id="top-bar">
     <div class="brand-container">
-      <div class="logo-shield">
-        <span id="logo-text-top" class="logo-text-top">CADUTA</span>
-        <span id="logo-text-bot" class="logo-text-bot">LIBERA</span>
+      <div id="logo-shield" class="logo-shield">
+        <span id="logo-text-top" class="logo-text-top">TRAP</span>
+        <span id="logo-text-bot" class="logo-text-bot">10 QUIZ</span>
       </div>
-      <div id="mode-tag" class="mode-tag">IL GIOCO FINALE: LE 10 BOTOLE</div>
+      <div id="mode-tag" class="mode-tag">10 RISPOSTE · 1 SOLA GIUSTA</div>
     </div>
 
     <!-- PANNONE CENTRALE MONTEPREMI IN PALIO -->
@@ -63,6 +60,7 @@
         <button id="audio-toggle-btn" class="ctrl-btn" title="Attiva/Disattiva Suono">🔊 Suono On</button>
         <button id="voice-toggle-btn" class="ctrl-btn" title="Voce Commentatore">🎙️ Voce On</button>
         <button id="camera-view-btn" class="ctrl-btn" title="Cambia Inquadratura Camera">🎥 Camera</button>
+        <button id="pro-btn" class="ctrl-btn pro-btn" title="Pro">👑 PRO</button>
       </div>
     </div>
   </header>
@@ -111,6 +109,15 @@
           </div>
         </button>
 
+        <!-- FASE 1: JOLLY DI LEO (VIDEO PREMIO, GRATIS CON PRO) -->
+        <button id="jolly-btn" class="tv-action-btn jolly" style="display: none;">
+          <span class="btn-icon">🃏</span>
+          <div class="btn-text-wrap">
+            <span id="jolly-title" class="btn-title">JOLLY</span>
+            <span id="jolly-sub" class="btn-sub"></span>
+          </div>
+        </button>
+
         <!-- FASE 3: SCELTA 30 SECONDI (MANTIENI O DIMEZZA) -->
         <button id="keep-choice-btn" class="tv-action-btn keep" style="display: none;">
           <span class="btn-icon">🛡️</span>
@@ -144,7 +151,7 @@
     <div class="modal-backdrop"></div>
     <div class="modal-dialog rules-dialog">
       <div class="modal-header">
-        <div id="rules-sub" class="tv-subtitle">GUIDA UFFICIALE DELLO SHOW</div>
+        <div id="rules-sub" class="tv-subtitle">COME SI GIOCA</div>
         <h2 id="rules-title" class="modal-title">IL REGOLAMENTO DELLE 10 BOTOLE</h2>
       </div>
       <div class="rules-content">
@@ -169,12 +176,39 @@
         <div class="rule-item">
           <span class="rule-badge">4</span>
           <div>
-            <strong id="rule4-title">Il Confronto Diretto:</strong> <span id="rule4-desc">Scegli tu quale delle altre botole rimaste vuoi confrontare una ad una con la tua! Se la botola che sfidi è sbagliata, cade lei nel vuoto. Ma se sfidi quella giusta... cade la tua ed è Caduta Libera!</span>
+            <strong id="rule4-title">Il Confronto Diretto:</strong> <span id="rule4-desc">Scegli tu quale delle altre botole rimaste vuoi confrontare una ad una con la tua! Se la botola che sfidi è sbagliata, cade lei nel vuoto. Ma se sfidi quella giusta... si apre la tua e precipiti!</span>
           </div>
         </div>
       </div>
       <button id="close-rules-btn" class="tv-primary-btn" style="margin-top: 20px;">HO CAPITO, GIOCHIAMO!</button>
     </div>
+  </div>
+
+  <!-- MODAL: VERSIONE PRO (ACQUISTO UNA TANTUM) -->
+  <div id="pro-modal" class="game-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog pro-dialog">
+      <button id="pro-close-btn" class="modal-close" aria-label="Chiudi">✕</button>
+      <div class="pro-crown">👑</div>
+      <h2 id="pro-title" class="modal-title">TRAP10 PRO</h2>
+      <p id="pro-subtitle" class="pro-subtitle"></p>
+      <ul id="pro-benefits" class="pro-benefits"></ul>
+      <p id="pro-status" class="pro-status"></p>
+      <button id="pro-buy-btn" class="tv-primary-btn pro-buy-btn"></button>
+      <button id="pro-restore-btn" class="pro-restore-btn"></button>
+      <p id="pro-message" class="pro-message"></p>
+    </div>
+  </div>
+
+  <!-- ANTEPRIMA PUBBLICITÀ NEL BROWSER / SPAZIO PER IL BANNER NATIVO -->
+  <div id="web-ad-bar" class="web-ad-bar" hidden>
+    <button id="web-ad-pro-btn" class="web-ad-pro-btn">👑 PRO</button>
+  </div>
+
+  <!-- PANNELLO DIAGNOSTICO ANNUNCI (7 TOCCHI SUL LOGO) -->
+  <div id="ad-diag" class="ad-diag" hidden>
+    <button id="ad-diag-toggle" class="ad-diag-head"></button>
+    <div id="ad-diag-log" class="ad-diag-log"></div>
   </div>
 
   <!-- MODAL: RISULTATO FINALE (VITTORIA / SCONFITTA) -->
@@ -195,7 +229,7 @@
   </div>
 
   <!-- SCRIPT THREE.JS E LOGICA DI GIOCO -->
-  <script src="three.min.js"></script>
-  <script type="module" src="js/game.js"></script>
+  <script src="/three.min.js"></script>
+  <script type="module" src="/js/game.js"></script>
 </body>
 </html>

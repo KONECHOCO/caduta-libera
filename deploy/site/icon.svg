@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#0d2a66"/>
+      <stop offset="0.55" stop-color="#071538"/>
+      <stop offset="1" stop-color="#020611"/>
+    </radialGradient>
+    <radialGradient id="spot" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffe9a0" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6c2"/>
+      <stop offset="0.45" stop-color="#ffd700"/>
+      <stop offset="1" stop-color="#c98a00"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="512" cy="540" r="330" fill="url(#spot)"/>
+  <!-- Anello dello studio -->
+  <circle cx="512" cy="540" r="352" fill="none" stroke="#00d2ff" stroke-width="10" opacity="0.55" filter="url(#glow)"/>
+  <!-- 10 botole in cerchio: 9 azzurre, 1 rossa aperta -->
+  <g transform="translate(512 540)">
+    <g fill="#0a1f4d" stroke="#00d2ff" stroke-width="9">
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(0)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(36)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(72)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(108)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(144)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(216)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(252)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(288)"/>
+      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(324)"/>
+    </g>
+    <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(180)" fill="#2a0008" stroke="#ff2a44" stroke-width="9" filter="url(#glow)"/>
+  </g>
+  <!-- Logo -->
+  <text x="512" y="420" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="120" letter-spacing="14" fill="#ffffff">TRAP</text>
+  <text x="512" y="700" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="300" fill="url(#gold)" filter="url(#glow)">10</text>
+</svg>

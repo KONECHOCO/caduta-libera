@@ -1,11 +1,26 @@
-// Game Manager per "LE DIECI BOTOLE" / "STILL STANDING"
+// Game Manager di TRAP10 QUIZ
 // Con supporto completo Multilingua (i18n): IT, EN, ES, FR, DE
 
-import { QUESTIONS_BY_LANG } from './questions.js';
+// Font inclusi nell'app: funzionano offline e senza richieste a servizi esterni
+import '@fontsource/montserrat/400.css';
+import '@fontsource/montserrat/600.css';
+import '@fontsource/montserrat/700-italic.css';
+import '@fontsource/montserrat/800.css';
+import '@fontsource/montserrat/900.css';
+import '@fontsource/orbitron/600.css';
+import '@fontsource/orbitron/800.css';
+import '@fontsource/orbitron/900.css';
+import '@fontsource/rajdhani/600.css';
+import '@fontsource/rajdhani/700.css';
+import { generateQuestion } from './questions.js';
 import { i18n } from './i18n.js';
 import { sound } from './sound.js';
 import { announcer } from './speech.js';
 import { Studio3D } from './studio3d.js';
+import {
+  initMonetization, subscribeMonetization, getMonetization, trackAdAction, setGameplayActive,
+  jollyAvailable, earnJolly, buyPro, restorePro, toggleTestAds
+} from './monetization.js';
 
 export class DieciBotoleGame {
   constructor() {
@@ -24,7 +39,9 @@ export class DieciBotoleGame {
 
     this.activeBotolaIndices = new Set([0,1,2,3,4,5,6,7,8,9]);
     this.eliminatedBotolaIndices = new Set();
-    this.usedQuestionIds = new Set();
+    this.roundId = 0;
+    this.history = loadJSON(HISTORY_KEY, { sigs: [], cats: [] });
+    this.stats = loadJSON(STATS_KEY, { played: 0, wins: 0, totalWon: 0, bestWin: 0, streak: 0, bestStreak: 0 });
 
     // Referenze DOM
     this.dom = {
@@ -61,6 +78,25 @@ export class DieciBotoleGame {
       endDetail: document.getElementById('end-detail'),
       endBtn: document.getElementById('end-btn'),
       hintPill: document.getElementById('hint-pill'),
+      logoShield: document.getElementById('logo-shield'),
+      jollyBtn: document.getElementById('jolly-btn'),
+      jollyTitle: document.getElementById('jolly-title'),
+      jollySub: document.getElementById('jolly-sub'),
+      proBtn: document.getElementById('pro-btn'),
+      proModal: document.getElementById('pro-modal'),
+      proCloseBtn: document.getElementById('pro-close-btn'),
+      proTitle: document.getElementById('pro-title'),
+      proSubtitle: document.getElementById('pro-subtitle'),
+      proBenefits: document.getElementById('pro-benefits'),
+      proStatus: document.getElementById('pro-status'),
+      proBuyBtn: document.getElementById('pro-buy-btn'),
+      proRestoreBtn: document.getElementById('pro-restore-btn'),
+      proMessage: document.getElementById('pro-message'),
+      webAdBar: document.getElementById('web-ad-bar'),
+      webAdProBtn: document.getElementById('web-ad-pro-btn'),
+      adDiag: document.getElementById('ad-diag'),
+      adDiagToggle: document.getElementById('ad-diag-toggle'),
+      adDiagLog: document.getElementById('ad-diag-log'),
 
       // Regole
       rulesSub: document.getElementById('rules-sub'),
@@ -78,6 +114,15 @@ export class DieciBotoleGame {
     this.init();
   }
 
+  // setTimeout legato alla manche corrente: se nel frattempo è iniziata una nuova manche
+  // (es. cambio lingua) la callback viene ignorata
+  later(fn, ms) {
+    const round = this.roundId;
+    return setTimeout(() => {
+      if (round === this.roundId) fn();
+    }, ms);
+  }
+
   init() {
     this.studio = new Studio3D(this.dom.viewport3d);
 
@@ -92,7 +137,121 @@ export class DieciBotoleGame {
 
     this.setupEventListeners();
     this.updateStaticUITranslations();
+    subscribeMonetization(st => this.onMonetizationChange(st));
     this.startNewFinaleRound();
+    initMonetization();
+  }
+
+  // Pulsanti della barra: icona sempre visibile, testo nascosto sugli schermi stretti
+  setCtrl(btn, text) {
+    if (!btn) return;
+    const [icon, ...rest] = text.split(' ');
+    btn.innerHTML = `<span class="ic">${icon}</span> <span class="lbl">${rest.join(' ')}</span>`;
+    btn.title = text.replace(icon, '').trim();
+  }
+
+  // Aggiorna Pro, banner e pannello diagnostico quando cambia lo stato della monetizzazione
+  onMonetizationChange(st) {
+    // Spazio in fondo per il banner nativo o per la barra di anteprima nel browser
+    const showWebBar = !st.native && !st.isPro;
+    this.dom.webAdBar.hidden = !showWebBar;
+    const adH = st.isPro ? 0 : st.native ? st.bannerHeight : this.dom.webAdBar.offsetHeight;
+    document.documentElement.style.setProperty('--ad-h', `${adH}px`);
+
+    this.dom.proBtn.classList.toggle('owned', st.isPro);
+    this.renderProModal();
+    this.updateJollyButton();
+
+    this.dom.adDiag.hidden = !(st.testAds && st.native);
+    if (!this.dom.adDiag.hidden) {
+      this.dom.adDiagToggle.textContent = `ADS DEBUG · ready=${st.adsReady} pro=${st.isPro} ${this.diagOpen === false ? '▲' : '▼'}`;
+      this.dom.adDiagLog.hidden = this.diagOpen === false;
+      this.dom.adDiagLog.innerHTML = (st.diag || []).map(l => `<div>${l}</div>`).join('');
+    }
+  }
+
+  renderProModal(message) {
+    const st = getMonetization();
+    const price = st.proPrice || i18n.t('proFallbackPrice');
+    this.dom.proTitle.textContent = 'TRAP10 PRO';
+    this.dom.proSubtitle.textContent = i18n.t('proSubtitle');
+    this.dom.proBenefits.innerHTML = ['proBenefit1', 'proBenefit2', 'proBenefit3']
+      .map(k => `<li>✔ ${i18n.t(k)}</li>`).join('');
+    this.dom.proStatus.textContent = st.isPro ? i18n.t('proOwned') : (!st.native ? i18n.t('proWebOnly') : '');
+    const canBuy = st.native && !st.isPro;
+    this.dom.proBuyBtn.style.display = canBuy ? '' : 'none';
+    this.dom.proRestoreBtn.style.display = canBuy ? '' : 'none';
+    this.dom.proBuyBtn.textContent = i18n.t('proBuy', { price });
+    this.dom.proRestoreBtn.textContent = i18n.t('proRestore');
+    this.dom.proCloseBtn.setAttribute('aria-label', i18n.t('btnClose'));
+    if (message !== undefined) this.dom.proMessage.textContent = message;
+  }
+
+  async runProAction(fn, okKey, failKey) {
+    this.dom.proBuyBtn.disabled = true;
+    this.dom.proRestoreBtn.disabled = true;
+    this.renderProModal('…');
+    try {
+      const ok = await fn();
+      this.renderProModal(i18n.t(ok ? okKey : failKey));
+    } catch (err) {
+      console.warn('Pro purchase error', err);
+      this.renderProModal(i18n.t('proError'));
+    } finally {
+      this.dom.proBuyBtn.disabled = false;
+      this.dom.proRestoreBtn.disabled = false;
+    }
+  }
+
+  // ---------- Jolly di Leo: elimina 2 risposte sbagliate nella fase di scelta ----------
+  updateJollyButton() {
+    if (!this.dom.jollyBtn) return;
+    const visible = this.gameState === 'INITIAL_CHOICE_90S' && !this.jollyUsed;
+    this.dom.jollyBtn.style.display = visible ? 'flex' : 'none';
+    if (!visible) return;
+    const st = getMonetization();
+    this.dom.jollyTitle.textContent = i18n.t('jollyTitle');
+    this.dom.jollySub.textContent = st.isPro || !st.native ? i18n.t('jollySubFree') : i18n.t('jollySubVideo');
+    this.dom.jollyBtn.disabled = !jollyAvailable();
+  }
+
+  async useJolly() {
+    if (this.gameState !== 'INITIAL_CHOICE_90S' || this.jollyUsed || this.jollyBusy) return;
+    this.jollyBusy = true;
+    this.timerPaused = true;
+    const round = this.roundId;
+    const earned = await earnJolly();
+    this.jollyBusy = false;
+    this.timerPaused = false;
+    if (round !== this.roundId || this.gameState !== 'INITIAL_CHOICE_90S' || !earned) {
+      this.updateJollyButton();
+      return;
+    }
+    this.jollyUsed = true;
+    this.updateJollyButton();
+
+    const candidates = this.currentQuestion.options
+      .map((opt, idx) => ({ opt, idx }))
+      .filter(({ opt, idx }) => !opt.isCorrect && idx !== this.selectedBotolaIndex && !this.eliminatedBotolaIndices.has(idx));
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+    announcer.speak(i18n.t('spkJolly'), true);
+    candidates.slice(0, 2).forEach(({ idx }) => {
+      sound.playBotolaDrop();
+      this.studio.eliminateBotola(idx, () => {
+        if (round !== this.roundId) return;
+        this.activeBotolaIndices.delete(idx);
+        this.eliminatedBotolaIndices.add(idx);
+        const tile = document.getElementById(`option-tile-${idx}`);
+        if (tile) {
+          tile.classList.add('eliminated');
+          const statusEl = tile.querySelector('.tile-status');
+          if (statusEl) statusEl.textContent = i18n.t('tileEliminated');
+        }
+      });
+    });
   }
 
   setupEventListeners() {
@@ -112,13 +271,13 @@ export class DieciBotoleGame {
     this.dom.audioToggleBtn.addEventListener('click', () => {
       sound.init();
       const muted = sound.toggleMute();
-      this.dom.audioToggleBtn.innerHTML = muted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn');
+      this.setCtrl(this.dom.audioToggleBtn, muted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn'));
       this.dom.audioToggleBtn.classList.toggle('muted', muted);
     });
 
     this.dom.voiceToggleBtn.addEventListener('click', () => {
       const active = announcer.toggle();
-      this.dom.voiceToggleBtn.innerHTML = active ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff');
+      this.setCtrl(this.dom.voiceToggleBtn, active ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff'));
       this.dom.voiceToggleBtn.classList.toggle('muted', !active);
     });
 
@@ -133,6 +292,37 @@ export class DieciBotoleGame {
     // Modale Regole
     this.dom.infoRulesBtn.addEventListener('click', () => {
       this.dom.rulesModal.classList.add('active');
+      trackAdAction();
+    });
+
+    // Versione Pro
+    const openPro = () => {
+      this.renderProModal('');
+      this.dom.proModal.classList.add('active');
+    };
+    this.dom.proBtn.addEventListener('click', openPro);
+    this.dom.webAdProBtn.addEventListener('click', openPro);
+    this.dom.proCloseBtn.addEventListener('click', () => this.dom.proModal.classList.remove('active'));
+    this.dom.proBuyBtn.addEventListener('click', () => this.runProAction(buyPro, 'proOwned', 'proError'));
+    this.dom.proRestoreBtn.addEventListener('click', () => this.runProAction(restorePro, 'proRestored', 'proNotFound'));
+
+    // Jolly di Leo
+    this.dom.jollyBtn.addEventListener('click', () => this.useJolly());
+
+    // 7 tocchi sul logo: annunci di test on/off (per le build di prova), poi riaprire l'app
+    let taps = { n: 0, at: 0 };
+    this.dom.logoShield.addEventListener('click', () => {
+      const now = Date.now();
+      taps = now - taps.at < 1500 ? { n: taps.n + 1, at: now } : { n: 1, at: now };
+      if (taps.n >= 7) {
+        taps = { n: 0, at: 0 };
+        const on = toggleTestAds();
+        alert(i18n.t(on ? 'testAdsOn' : 'testAdsOff'));
+      }
+    });
+    this.dom.adDiagToggle.addEventListener('click', () => {
+      this.diagOpen = this.diagOpen === false;
+      this.onMonetizationChange(getMonetization());
     });
     this.dom.closeRulesBtn.addEventListener('click', () => {
       this.dom.rulesModal.classList.remove('active');
@@ -160,8 +350,10 @@ export class DieciBotoleGame {
     });
 
     // Tasto Rigioca
-    this.dom.endBtn.addEventListener('click', () => {
+    this.dom.endBtn.addEventListener('click', async () => {
       this.dom.endModal.classList.remove('active');
+      // Punto di passaggio tra due manche: qui può comparire un interstitial
+      await trackAdAction();
       this.startNewFinaleRound();
     });
   }
@@ -173,14 +365,12 @@ export class DieciBotoleGame {
     if (this.dom.modeTag) this.dom.modeTag.textContent = i18n.t('modeTag');
     if (this.dom.jackpotLabel) this.dom.jackpotLabel.textContent = i18n.t('jackpotLabel');
 
-    if (this.dom.infoRulesBtn) this.dom.infoRulesBtn.innerHTML = i18n.t('btnRules');
-    if (this.dom.audioToggleBtn) {
-      this.dom.audioToggleBtn.innerHTML = sound.isMuted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn');
-    }
-    if (this.dom.voiceToggleBtn) {
-      this.dom.voiceToggleBtn.innerHTML = announcer.enabled ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff');
-    }
-    if (this.dom.cameraViewBtn) this.dom.cameraViewBtn.innerHTML = i18n.t('btnCamera');
+    this.setCtrl(this.dom.infoRulesBtn, i18n.t('btnRules'));
+    this.setCtrl(this.dom.audioToggleBtn, sound.isMuted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn'));
+    this.setCtrl(this.dom.voiceToggleBtn, announcer.enabled ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff'));
+    this.setCtrl(this.dom.cameraViewBtn, i18n.t('btnCamera'));
+    this.setCtrl(this.dom.proBtn, '👑 PRO');
+    this.renderProModal();
 
     // Bottoni azione
     const confirmTitle = this.dom.confirmBtn.querySelector('.btn-title');
@@ -220,20 +410,18 @@ export class DieciBotoleGame {
   // FASE 0: INIZIALIZZAZIONE NUOVA MANCHE CON LINGUA ATTIVA
   // =========================================================================
   startNewFinaleRound() {
+    this.roundId++;
     clearInterval(this.timerInterval);
     sound.stopTension();
     sound.stopHeartbeat();
 
-    const lang = i18n.getLanguage();
-    const questionsForLang = QUESTIONS_BY_LANG[lang] || QUESTIONS_BY_LANG.it;
-
-    if (this.usedQuestionIds.size >= questionsForLang.length) {
-      this.usedQuestionIds.clear();
-    }
-
-    const available = questionsForLang.filter(q => !this.usedQuestionIds.has(q.id));
-    this.currentQuestion = available[Math.floor(Math.random() * available.length)] || questionsForLang[0];
-    this.usedQuestionIds.add(this.currentQuestion.id);
+    this.currentQuestion = generateQuestion(i18n.getLanguage(), {
+      recentSigs: this.history.sigs,
+      recentCats: this.history.cats.slice(-2)
+    });
+    this.history.sigs = [...this.history.sigs, this.currentQuestion.sig].slice(-80);
+    this.history.cats = [...this.history.cats, this.currentQuestion.catKey].slice(-4);
+    saveJSON(HISTORY_KEY, this.history);
 
     this.initialPrizeNum = this.currentQuestion.prizeValue || 100000;
     this.currentPrizeNum = this.initialPrizeNum;
@@ -245,6 +433,9 @@ export class DieciBotoleGame {
     this.activeBotolaIndices = new Set([0,1,2,3,4,5,6,7,8,9]);
     this.eliminatedBotolaIndices = new Set();
     this.gameState = 'INTRO';
+    this.jollyUsed = false;
+    this.timerPaused = false;
+    setGameplayActive(true);
 
     // Aggiorna UI
     this.updatePrizeDisplay();
@@ -261,7 +452,8 @@ export class DieciBotoleGame {
     }
     this.dom.questionCategory.textContent = this.currentQuestion.category;
     this.dom.questionText.textContent = this.currentQuestion.question;
-    this.dom.hintPill.textContent = `💡 ${this.currentQuestion.hint}`;
+    this.dom.hintPill.textContent = this.currentQuestion.hint ? `💡 ${this.currentQuestion.hint}` : '';
+    this.dom.hintPill.style.display = this.currentQuestion.hint ? '' : 'none';
     this.dom.optionsBoardHeader.textContent = i18n.t('boardHeader');
 
     this.dom.confirmBtn.style.display = 'flex';
@@ -275,14 +467,14 @@ export class DieciBotoleGame {
     this.studio.setQuestionOptions(this.currentQuestion.options);
     this.render2DOptionsBoard();
 
-    // Gerry / Annunciatore in lingua locale
+    // Leo, il conduttore virtuale, nella lingua attiva
     announcer.speak(i18n.t('spkIntro', {
       prize: this.formatPrize(this.currentPrizeNum),
       cat: this.currentQuestion.category,
       q: this.currentQuestion.question
     }));
 
-    setTimeout(() => {
+    this.later(() => {
       this.startInitialChoicePhase();
     }, 3200);
   }
@@ -291,11 +483,12 @@ export class DieciBotoleGame {
     this.dom.prizeDisplay.textContent = this.formatPrize(this.currentPrizeNum);
   }
 
+  // Montepremi virtuale (nessun denaro reale) nel formato della lingua attiva
   formatPrize(num) {
     const lang = i18n.getLanguage();
-    if (lang === 'en') return `$ ${num.toLocaleString('en-US')}`;
-    if (lang === 'fr') return `${num.toLocaleString('fr-FR')} €`;
-    return `€ ${num.toLocaleString('it-IT')}`;
+    if (lang === 'en') return `$${num.toLocaleString('en-US')}`;
+    if (lang === 'it') return `€ ${num.toLocaleString('it-IT')}`;
+    return `${num.toLocaleString(i18n.t('langCode'))} €`;
   }
 
   render2DOptionsBoard() {
@@ -349,10 +542,12 @@ export class DieciBotoleGame {
 
     this.dom.statusBanner.textContent = i18n.t('bannerPhase1');
     this.dom.statusBanner.className = "status-banner thinking";
+    this.updateJollyButton();
 
     announcer.speak(i18n.t('spkPhase1'));
 
     this.timerInterval = setInterval(() => {
+      if (this.timerPaused) return;
       this.timerSeconds--;
       this.updateTimerUI(90);
 
@@ -369,7 +564,7 @@ export class DieciBotoleGame {
 
       if (this.timerSeconds <= 0) {
         clearInterval(this.timerInterval);
-        if (this.selectedBotolaIndex < 0) this.selectInitialBotola(0);
+        if (this.selectedBotolaIndex < 0) this.selectInitialBotola(Math.floor(Math.random() * 10));
         this.lockInitialChoice();
       }
     }, 1000);
@@ -395,14 +590,17 @@ export class DieciBotoleGame {
   }
 
   lockInitialChoice() {
+    if (this.jollyBusy) return;
     clearInterval(this.timerInterval);
     this.originalSelectedBotolaIndex = this.selectedBotolaIndex;
     this.dom.confirmBtn.disabled = true;
+    this.gameState = 'LOCKED';
+    this.updateJollyButton();
 
     const opt = this.currentQuestion.options[this.selectedBotolaIndex];
     announcer.speak(i18n.t('spkLocked', { id: opt.id, text: opt.text }), true);
 
-    setTimeout(() => {
+    this.later(() => {
       this.runAutoElimination5();
     }, 1800);
   }
@@ -426,12 +624,16 @@ export class DieciBotoleGame {
       }
     });
 
-    const shuffled = wrongCandidateIndices.sort(() => 0.5 - Math.random());
-    const fiveToDrop = shuffled.slice(0, 5);
+    // Fisher-Yates: estrazione uniforme delle 5 botole da aprire
+    for (let i = wrongCandidateIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [wrongCandidateIndices[i], wrongCandidateIndices[j]] = [wrongCandidateIndices[j], wrongCandidateIndices[i]];
+    }
+    const fiveToDrop = wrongCandidateIndices.slice(0, 5);
 
-    setTimeout(() => {
+    this.later(() => {
       this.dropBatchSequentially(fiveToDrop, 0, () => {
-        setTimeout(() => {
+        this.later(() => {
           this.start30SecondsDecisionPhase();
         }, 1500);
       });
@@ -449,9 +651,11 @@ export class DieciBotoleGame {
 
     announcer.speak(i18n.t('spkDropBotola', { id: opt.id }));
 
-    setTimeout(() => {
+    const round = this.roundId;
+    this.later(() => {
       sound.playBotolaDrop();
       this.studio.eliminateBotola(botolaIdx, () => {
+        if (round !== this.roundId) return;
         this.activeBotolaIndices.delete(botolaIdx);
         this.eliminatedBotolaIndices.add(botolaIdx);
 
@@ -462,7 +666,7 @@ export class DieciBotoleGame {
           if (statusEl) statusEl.textContent = i18n.t('tileEliminated');
         }
 
-        setTimeout(() => {
+        this.later(() => {
           this.dropBatchSequentially(indices, currentIdx + 1, onComplete);
         }, 1600);
       });
@@ -498,6 +702,7 @@ export class DieciBotoleGame {
     announcer.speak(i18n.t('spkPhase3'));
 
     this.timerInterval = setInterval(() => {
+      if (this.timerPaused) return;
       this.timerSeconds--;
       this.updateTimerUI(30);
 
@@ -605,7 +810,7 @@ export class DieciBotoleGame {
     this.dom.keepChoiceBtn.style.display = 'none';
     this.dom.changeChoiceBtn.style.display = 'none';
 
-    setTimeout(() => {
+    this.later(() => {
       this.startConfrontationChoice();
     }, 1100);
   }
@@ -669,7 +874,7 @@ export class DieciBotoleGame {
       }
     });
 
-    this.setTimerToConfrontationMode("⚔️", "SFIDA");
+    this.setTimerToConfrontationMode("⚔️", i18n.t('timerChallenge'));
 
     this.dom.statusBanner.textContent = i18n.t('bannerConfronting', { targetId: targetOpt.id, text: targetOpt.text, myId: myOpt.id });
     this.dom.statusBanner.className = "status-banner locked";
@@ -681,7 +886,8 @@ export class DieciBotoleGame {
     announcer.speak(i18n.t('spkConfronting', { id: targetOpt.id, text: targetOpt.text }), true);
 
     // Suspense televisiva snella (1800ms)
-    setTimeout(() => {
+    const round = this.roundId;
+    this.later(() => {
       sound.stopHeartbeat();
       sound.stopTension();
 
@@ -689,6 +895,7 @@ export class DieciBotoleGame {
         // ESITO: LA BOTOLA SFIDATA È ERRATA (CADE)
         sound.playBotolaDrop();
         this.studio.eliminateBotola(targetIdx, () => {
+          if (round !== this.roundId) return;
           this.activeBotolaIndices.delete(targetIdx);
           this.eliminatedBotolaIndices.add(targetIdx);
 
@@ -703,14 +910,14 @@ export class DieciBotoleGame {
           const remainingOpponents = this.activeBotolaIndices.size - 1;
 
           if (remainingOpponents <= 0) {
-            setTimeout(() => {
+            this.later(() => {
               this.handleVictory();
             }, 1000);
           } else {
             announcer.speak(i18n.t('spkConfrontSafe', { id: targetOpt.id }));
             this.dom.statusBanner.textContent = i18n.t('bannerConfrontSafe', { targetId: targetOpt.id, rem: remainingOpponents });
 
-            setTimeout(() => {
+            this.later(() => {
               this.startConfrontationChoice();
             }, 1400);
           }
@@ -728,7 +935,7 @@ export class DieciBotoleGame {
         announcer.speak(i18n.t('spkConfrontWrongChampion', { id: targetOpt.id }), true);
         sound.playWrong();
 
-        setTimeout(() => {
+        this.later(() => {
           this.handleDefeat(myOpt, targetOpt);
         }, 1500);
       }
@@ -740,15 +947,17 @@ export class DieciBotoleGame {
   // =========================================================================
   handleVictory() {
     this.gameState = 'END_GAME';
+    setGameplayActive(false);
     const myOpt = this.currentQuestion.options[this.selectedBotolaIndex];
 
-    this.setTimerToConfrontationMode("🏆", "VINTO!");
+    this.setTimerToConfrontationMode("🏆", i18n.t('timerWon'));
+    this.recordResult(this.currentPrizeNum);
     sound.playCorrect();
     this.studio.celebrateChampion();
 
     announcer.speak(i18n.t('spkVictory', { prize: this.formatPrize(this.currentPrizeNum) }));
 
-    setTimeout(() => {
+    this.later(() => {
       this.dom.endModal.classList.add('active');
       this.dom.endTitle.textContent = i18n.t('victoryTitle');
       this.dom.endTitle.className = "end-title victory";
@@ -759,6 +968,7 @@ export class DieciBotoleGame {
       this.dom.endDetail.innerHTML = `
         <strong>${myOpt.text}</strong><br>
         <em>${myOpt.detail}</em>
+        ${this.renderStatsLine()}
       `;
       this.dom.endBtn.textContent = i18n.t('btnPlayAgain');
     }, 1800);
@@ -769,12 +979,16 @@ export class DieciBotoleGame {
   // =========================================================================
   handleDefeat(myOpt, correctOpt) {
     this.gameState = 'END_GAME';
+    setGameplayActive(false);
     sound.playBotolaDrop();
 
-    this.setTimerToConfrontationMode("✕", "CADUTA");
+    this.setTimerToConfrontationMode("✕", i18n.t('timerFell'));
+    this.recordResult(0);
     this.studio.setCameraChampionOnBotola(this.selectedBotolaIndex);
+    const round = this.roundId;
     this.studio.dropChampion(this.selectedBotolaIndex, () => {
-      setTimeout(() => {
+      if (round !== this.roundId) return;
+      this.later(() => {
         this.dom.endModal.classList.add('active');
         this.dom.endTitle.textContent = i18n.t('defeatTitle');
         this.dom.endTitle.className = "end-title defeat";
@@ -785,10 +999,35 @@ export class DieciBotoleGame {
           <strong>${myOpt.id} - ${myOpt.text}</strong> (✕)<br>
           <strong>${correctOpt.id} - ${correctOpt.text}</strong> (✔)<br>
           <em>${correctOpt.detail}</em>
+          ${this.renderStatsLine()}
         `;
         this.dom.endBtn.textContent = i18n.t('btnPlayAgain');
       }, 1200);
     });
+  }
+
+  // Statistiche salvate sul dispositivo
+  recordResult(prizeWon) {
+    const s = this.stats;
+    s.played++;
+    if (prizeWon > 0) {
+      s.wins++;
+      s.totalWon += prizeWon;
+      s.bestWin = Math.max(s.bestWin, prizeWon);
+      s.streak++;
+      s.bestStreak = Math.max(s.bestStreak, s.streak);
+    } else {
+      s.streak = 0;
+    }
+    saveJSON(STATS_KEY, s);
+  }
+
+  renderStatsLine() {
+    const s = this.stats;
+    const pct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
+    return `<div class="stats-line">${i18n.t('statsLine', {
+      played: s.played, wins: s.wins, pct, streak: s.streak, best: this.formatPrize(s.bestWin)
+    })}</div>`;
   }
 
   updateTimerUI(maxSec = 90) {
@@ -805,6 +1044,24 @@ export class DieciBotoleGame {
       this.dom.timerCircle.classList.remove('urgent');
     }
   }
+}
+
+const HISTORY_KEY = 'trap10.history';
+const STATS_KEY = 'trap10.stats';
+
+function loadJSON(key, fallback) {
+  try {
+    const v = JSON.parse(localStorage.getItem(key));
+    return v && typeof v === 'object' ? { ...fallback, ...v } : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
 }
 
 // Avvio

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "trap10",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "5193", "--strictPort"],
+      "port": 5193,
+      "autoPort": false
+    }
+  ]
+}

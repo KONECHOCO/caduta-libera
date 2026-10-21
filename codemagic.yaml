@@ -1,0 +1,86 @@
+# Trap10 Quiz — build per App Store e Play Store (modello: OmniTransit).
+# iOS: profilo App Store in ios/profiles (creato via API App Store Connect).
+# Android: keystore "trap10_android" da caricare su Codemagic (Code signing identities).
+# Nessun trigger automatico: la build si avvia a mano.
+workflows:
+  ios-app-store:
+    name: Trap10 Quiz iOS App Store
+    max_build_duration: 90
+    instance_type: mac_mini_m4
+    integrations:
+      app_store_connect: Ikonet Solutions
+    environment:
+      ios_signing:
+        # Il certificato (con chiave privata) è su Codemagic; il profilo App Store di Trap10 è nel repo
+        # (ios/profiles) e viene installato da uno script. Codemagic richiede almeno un profilo qui: quello di
+        # FuelSaver serve solo a questo, `xcode-project use-profiles` sceglie il profilo con bundle id corrispondente.
+        provisioning_profiles:
+          - fuelsaver_appstore
+        certificates:
+          - ithelpdesk_distribution_20260916
+      vars:
+        XCODE_PROJECT: ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+      xcode: latest
+      node: 22
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Build web app and sync iOS project
+        script: |
+          npm run build
+          npx cap sync ios
+      - name: Install App Store provisioning profile
+        script: |
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          PROFILE=ios/profiles/trap10_appstore.mobileprovision
+          UUID=$(security cms -D -i "$PROFILE" | plutil -extract UUID raw -)
+          cp "$PROFILE" "$PROFILES_DIR/$UUID.mobileprovision"
+      - name: Set up signing profiles
+        script: xcode-project use-profiles
+      - name: Apply Codemagic build number
+        script: |
+          cd ios/App
+          agvtool new-version -all "$BUILD_NUMBER"
+      - name: Build IPA for App Store Connect
+        script: |
+          xcode-project build-ipa \
+            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
+
+  android-release:
+    name: Trap10 Quiz Android
+    max_build_duration: 45
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - trap10_android
+      vars:
+        PACKAGE_NAME: "com.ikonet.trap10"
+      node: 22
+      java: 21
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Build web app and sync Android project
+        script: |
+          npm run build
+          npx cap sync android
+      - name: Set Android SDK location
+        script: echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Build release AAB
+        script: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
