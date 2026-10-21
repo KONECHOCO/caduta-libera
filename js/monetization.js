@@ -232,16 +232,21 @@ async function requestTrackingPermission() {
   if (platform !== 'ios') return;
   try {
     await waitUntilActive();
-    for (let waited = 0; waited <= 10000; waited += 1000) {
+    diag(`ATT iniziale: ${(await AdMob.trackingAuthorizationStatus()).status}`);
+    for (let waited = 0; waited <= 15000; waited += 1000) {
       const { status } = await AdMob.trackingAuthorizationStatus();
       if (status !== 'notDetermined') {
-        diag(`ATT: ${status}`);
+        diag(`ATT: ${status} dopo ${waited / 1000} s`);
         return;
       }
-      if (waited === 3000) AdMob.requestTrackingAuthorization().catch(() => {});
+      // Riserva al popup nativo (SceneDelegate.swift): nuove richieste se iOS non l'ha ancora mostrato
+      if (waited === 4000 || waited === 9000) {
+        diag(`ATT: richiesta dal plugin (${waited / 1000} s)`);
+        AdMob.requestTrackingAuthorization().catch(err => diag(`ATT richiesta errore: ${err?.message || err}`));
+      }
       await sleep(1000);
     }
-    diag('ATT: nessuna risposta in 10 s, si prosegue');
+    diag('ATT: nessuna risposta in 15 s, si prosegue');
   } catch (err) {
     diag(`ATT errore: ${err?.message || err}`);
   }
