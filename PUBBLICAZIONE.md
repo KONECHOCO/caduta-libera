@@ -31,7 +31,7 @@ Rigenerare gli screenshot: `npx vite --port 5193` e poi
    bundle id `com.ikonet.trap10`, SKU `trap10`, Full Access.
 3. **AdMob**: app "Trap10 Quiz iOS" e "Trap10 Quiz Android" con 4 unità ciascuna (banner, interstitial, con premio, apertura app).
    Gli ID vanno in `.env.production` (`VITE_ADMOB_*`), l'App ID iOS in `ios/App/App/Info.plist` (`GADApplicationIdentifier`)
-   e quello Android in `android/app/build.gradle` (`admobAppId`). Ora ci sono gli ID di test di Google.
+   e quello Android in `android/app/build.gradle` (`admobAppId`). Fatto: ID reali in `.env.production`, Info.plist e build.gradle.
    Messaggio GDPR: aggiungere le 2 app con l'URL della privacy.
 4. Script `ikonet_asc.py`: `bundle-profile`, `codemagic-add`, `metadata`, `screenshots`, `price-free`, `iap`.
 5. **App Privacy** (tutto "non collegato all'identità"): Device ID, Interazioni con il prodotto, Dati pubblicitari → Pubblicità di terze parti (tracciamento sì);
