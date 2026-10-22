@@ -1,17 +1,17 @@
-# Trap10 Quiz — build per App Store e Play Store (modello: OmniTransit).
+# Last Tile: Trivia Temple (ex Trap10 Quiz) — build per App Store e Play Store (modello: OmniTransit).
 # iOS: profilo App Store in ios/profiles (creato via API App Store Connect).
 # Android: keystore "trap10_android" da caricare su Codemagic (Code signing identities).
 # Nessun trigger automatico: la build si avvia a mano.
 workflows:
   ios-app-store:
-    name: Trap10 Quiz iOS App Store
+    name: Last Tile iOS App Store
     max_build_duration: 90
     instance_type: mac_mini_m4
     integrations:
       app_store_connect: Ikonet Solutions
     environment:
       ios_signing:
-        # Il certificato (con chiave privata) è su Codemagic; il profilo App Store di Trap10 è nel repo
+        # Il certificato (con chiave privata) è su Codemagic; il profilo App Store (bundle com.ikonet.trap10) è nel repo
         # (ios/profiles) e viene installato da uno script. Codemagic richiede almeno un profilo qui: quello di
         # FuelSaver serve solo a questo, `xcode-project use-profiles` sceglie il profilo con bundle id corrispondente.
         provisioning_profiles:
@@ -58,7 +58,7 @@ workflows:
         submit_to_app_store: false
 
   android-release:
-    name: Trap10 Quiz Android
+    name: Last Tile Android
     max_build_duration: 45
     instance_type: linux_x2
     environment:

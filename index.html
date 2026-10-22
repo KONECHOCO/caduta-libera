@@ -3,49 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Trap10 Quiz</title>
-  <meta name="description" content="Trap10 Quiz: 10 risposte, 10 botole, una sola giusta. Scegli la botola esatta e resta in piedi!">
-  
-  
-  <!-- Favicon SVG & App Icons per Mobile Store & PWA -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23040814' stroke='%2300d2ff' stroke-width='6'/><circle cx='50' cy='50' r='36' fill='%23071838' stroke='%23ffd700' stroke-width='4'/><text x='50' y='58' font-size='28' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>10</text></svg>">
+  <title>Last Tile: Trivia Temple</title>
+  <meta name="description" content="Last Tile: Trivia Temple. Esplora 10 sale, trova la lastra che regge e decidi se uscire col tesoro o scendere più a fondo.">
+
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Trap10 Quiz">
-  <meta name="theme-color" content="#040814">
+  <meta name="apple-mobile-web-app-title" content="Last Tile">
+  <meta name="theme-color" content="#0d0906">
   <meta name="mobile-web-app-capable" content="yes">
-  
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- VIEWPORT 3D DELLO STUDIO TELEVISIVO -->
+  <!-- SCENA 3D DEL TEMPIO -->
   <div id="viewport-3d"></div>
 
-  <!-- HUD SUPERIORE TELEVISIVO (BROADCAST PACKAGE) -->
+  <!-- BARRA SUPERIORE -->
   <header id="top-bar">
     <div class="brand-container">
       <div id="logo-shield" class="logo-shield">
-        <span id="logo-text-top" class="logo-text-top">TRAP</span>
-        <span id="logo-text-bot" class="logo-text-bot">10 QUIZ</span>
+        <span id="logo-text-top" class="logo-text-top">LAST TILE</span>
+        <span id="logo-text-bot" class="logo-text-bot">TRIVIA TEMPLE</span>
       </div>
-      <div id="mode-tag" class="mode-tag">10 RISPOSTE · 1 SOLA GIUSTA</div>
+      <div id="mode-tag" class="mode-tag">10 LASTRE · UNA SOLA REGGE</div>
     </div>
 
-    <!-- PANNONE CENTRALE MONTEPREMI IN PALIO -->
+    <!-- SALA E TESORO DELLA SPEDIZIONE -->
     <div class="hud-center-cluster">
       <div class="montepremi-display">
-        <span id="jackpot-label" class="hud-label">MONTEPREMI IN PALIO</span>
-        <span id="montepremi-val" class="digital-currency">€ 100.000</span>
+        <span id="hall-label" class="hud-label">SALA 1 / 10</span>
+        <span class="hud-treasure">
+          <span id="bag-label" class="hud-label">TESORO</span>
+          <span id="bag-val" class="digital-currency">0</span>
+        </span>
       </div>
     </div>
 
-    <!-- CONTROLLI RAPIDI DI GIOCO & SELETTORE LINGUA -->
     <div class="hud-right-cluster">
       <div class="quick-controls">
-        <!-- SELETTORE MULTILINGUA (IT, EN, ES, FR, DE) -->
         <div class="lang-selector-box">
           <select id="lang-select" class="ctrl-btn lang-select" title="Language / Lingua">
             <option value="it">🇮🇹 IT</option>
@@ -56,141 +55,119 @@
           </select>
         </div>
 
-        <button id="info-rules-btn" class="ctrl-btn" title="Regole del Gioco Finale">📖 Regole</button>
-        <button id="audio-toggle-btn" class="ctrl-btn" title="Attiva/Disattiva Suono">🔊 Suono On</button>
-        <button id="voice-toggle-btn" class="ctrl-btn" title="Voce Commentatore">🎙️ Voce On</button>
-        <button id="camera-view-btn" class="ctrl-btn" title="Cambia Inquadratura Camera">🎥 Camera</button>
+        <button id="info-rules-btn" class="ctrl-btn">📖 Regole</button>
+        <button id="audio-toggle-btn" class="ctrl-btn">🔊 Suono On</button>
+        <button id="voice-toggle-btn" class="ctrl-btn">🎙️ Guida On</button>
+        <button id="camera-view-btn" class="ctrl-btn">🎥 Visuale</button>
         <button id="pro-btn" class="ctrl-btn pro-btn" title="Pro">👑 PRO</button>
       </div>
     </div>
   </header>
 
-  <!-- INTERFACCIA PRINCIPALE DEL GIOCO FINALE -->
   <main id="main-finale-ui">
-    
-    <!-- BANNER DI STATO TELEVISIVO DINAMICO -->
-    <div id="status-banner" class="status-banner intro">
-      ASCOLTA LA DOMANDA E SCEGLI 1 RISPOSTA TRA LE 10 BOTOLE
-    </div>
+    <div id="status-banner" class="status-banner intro"></div>
 
-    <!-- SCHEDA DELLA DOMANDA CENTRALE -->
+    <!-- ENIGMA DELLA SALA -->
     <section class="finale-question-card">
       <div class="question-header">
-        <div id="finale-category" class="category-pill">LETTERATURA</div>
-        <div id="hint-pill" class="hint-pill">💡 Caricamento indizio...</div>
+        <div id="finale-category" class="category-pill"></div>
+        <div id="hint-pill" class="hint-pill"></div>
       </div>
-      <h1 id="finale-question-text" class="question-text">
-        Caricamento della domanda finale in corso...
-      </h1>
+      <h1 id="finale-question-text" class="question-text"></h1>
     </section>
 
-    <!-- ZONA TIMER 90/30 SECONDI & AZIONI DINAMICHE -->
+    <!-- TIMER E AZIONI -->
     <div class="timer-action-strip">
-      <!-- TIMER CENTRALE (90s o 30s) -->
       <div class="timer-wrapper">
         <svg class="timer-svg" viewBox="0 0 100 100">
           <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
           <circle id="timer-circle-progress" class="timer-circle-fg" cx="50" cy="50" r="45"></circle>
         </svg>
         <div class="timer-label-box">
-          <span id="timer-display" class="timer-number">90</span>
+          <span id="timer-display" class="timer-number">45</span>
           <span id="timer-sub" class="timer-sub">SEC</span>
         </div>
       </div>
 
-      <!-- BOTTONI AZIONE CONTESTUALI -->
       <div id="action-buttons-group" class="action-buttons-group">
-        <!-- FASE 1: TASTO CONFERMA INIZIALE -->
-        <button id="confirm-botola-btn" class="tv-action-btn primary" disabled>
-          <span class="btn-icon">🔒</span>
+        <button id="stand-btn" class="tv-action-btn primary" disabled>
+          <span class="btn-icon">🧭</span>
           <div class="btn-text-wrap">
-            <span class="btn-title">CONFERMA E POSIZIONATI</span>
-            <span class="btn-sub">BLOCCA LA BOTOLA INIZIALE</span>
+            <span class="btn-title"></span>
+            <span class="btn-sub"></span>
           </div>
         </button>
 
-        <!-- FASE 1: JOLLY DI LEO (VIDEO PREMIO, GRATIS CON PRO) -->
-        <button id="jolly-btn" class="tv-action-btn jolly" style="display: none;">
-          <span class="btn-icon">🃏</span>
+        <button id="torch-btn" class="tv-action-btn torch" style="display: none;">
+          <span class="btn-icon">🔥</span>
           <div class="btn-text-wrap">
-            <span id="jolly-title" class="btn-title">JOLLY</span>
-            <span id="jolly-sub" class="btn-sub"></span>
+            <span id="torch-title" class="btn-title"></span>
+            <span id="torch-sub" class="btn-sub"></span>
           </div>
         </button>
 
-        <!-- FASE 3: SCELTA 30 SECONDI (MANTIENI O DIMEZZA) -->
-        <button id="keep-choice-btn" class="tv-action-btn keep" style="display: none;">
+        <button id="hold-btn" class="tv-action-btn keep" style="display: none;">
           <span class="btn-icon">🛡️</span>
           <div class="btn-text-wrap">
-            <span class="btn-title">MANTIENI LA TUA BOTOLA</span>
-            <span id="keep-prize-sub" class="btn-sub">CONSERVA IL 100% DEL MONTEPREMI</span>
+            <span class="btn-title"></span>
+            <span id="hold-sub" class="btn-sub"></span>
           </div>
         </button>
 
-        <button id="change-choice-btn" class="tv-action-btn change" style="display: none;" disabled>
-          <span class="btn-icon">⚠️</span>
+        <button id="leap-btn" class="tv-action-btn change" style="display: none;">
+          <span class="btn-icon">🪢</span>
           <div class="btn-text-wrap">
-            <span id="change-btn-title" class="btn-title">CAMBIA BOTOLA</span>
-            <span id="change-prize-sub" class="btn-sub">DIMEZZA IL MONTEPREMI</span>
+            <span class="btn-title"></span>
+            <span id="leap-sub" class="btn-sub"></span>
           </div>
         </button>
       </div>
     </div>
 
-    <!-- TABELLONE DELLE 10 BOTOLE / OPZIONI -->
+    <!-- LE 10 RISPOSTE -->
     <section class="options-board-container">
-      <div id="options-board-header" class="options-board-header">LE 10 RISPOSTE (CLICCA PER SALIRE SULLA BOTOLA)</div>
-      <div id="options-grid" class="options-grid">
-        <!-- 10 Tile generate dinamicamente -->
-      </div>
+      <div id="options-board-header" class="options-board-header"></div>
+      <div id="options-grid" class="options-grid"></div>
     </section>
   </main>
 
-  <!-- MODAL: REGOLE DEL GIOCO FINALE -->
+  <!-- REGOLE -->
   <div id="rules-modal" class="game-modal">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog rules-dialog">
       <div class="modal-header">
-        <div id="rules-sub" class="tv-subtitle">COME SI GIOCA</div>
-        <h2 id="rules-title" class="modal-title">IL REGOLAMENTO DELLE 10 BOTOLE</h2>
+        <div id="rules-sub" class="tv-subtitle"></div>
+        <h2 id="rules-title" class="modal-title"></h2>
       </div>
       <div class="rules-content">
         <div class="rule-item">
           <span class="rule-badge">1</span>
-          <div>
-            <strong id="rule1-title">Scelta Iniziale (90 Secondi):</strong> <span id="rule1-desc">Ascolti la domanda con 10 risposte sulle 10 botole. Sali sulla botola che ritieni esatta e confermi.</span>
-          </div>
+          <div><strong id="rule1-title"></strong> <span id="rule1-desc"></span></div>
         </div>
         <div class="rule-item">
           <span class="rule-badge">2</span>
-          <div>
-            <strong id="rule2-title">Eliminazione delle Prime 5 Botole:</strong> <span id="rule2-desc">Il programma apre subito 5 botole con risposte sicuramente errate, facendole precipitare nel vuoto!</span>
-          </div>
+          <div><strong id="rule2-title"></strong> <span id="rule2-desc"></span></div>
         </div>
         <div class="rule-item">
           <span class="rule-badge">3</span>
-          <div>
-            <strong id="rule3-title">I 30 Secondi & Il Dimezzamento:</strong> <span id="rule3-desc">Hai 30 secondi per riflettere. Puoi mantenere la tua scelta o spostarti su un'altra botola dimezzando il montepremi!</span>
-          </div>
+          <div><strong id="rule3-title"></strong> <span id="rule3-desc"></span></div>
         </div>
         <div class="rule-item">
           <span class="rule-badge">4</span>
-          <div>
-            <strong id="rule4-title">Il Confronto Diretto:</strong> <span id="rule4-desc">Scegli tu quale delle altre botole rimaste vuoi confrontare una ad una con la tua! Se la botola che sfidi è sbagliata, cade lei nel vuoto. Ma se sfidi quella giusta... si apre la tua e precipiti!</span>
-          </div>
+          <div><strong id="rule4-title"></strong> <span id="rule4-desc"></span></div>
         </div>
       </div>
-      <button id="close-rules-btn" class="tv-primary-btn" style="margin-top: 20px;">HO CAPITO, GIOCHIAMO!</button>
+      <button id="close-rules-btn" class="tv-primary-btn" style="margin-top: 20px;"></button>
     </div>
   </div>
 
-  <!-- MODAL: VERSIONE PRO (ACQUISTO UNA TANTUM) -->
+  <!-- VERSIONE PRO (ACQUISTO UNA TANTUM) -->
   <div id="pro-modal" class="game-modal">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog pro-dialog">
       <button id="pro-close-btn" class="modal-close" aria-label="Chiudi">✕</button>
       <div class="pro-crown">👑</div>
-      <h2 id="pro-title" class="modal-title">TRAP10 PRO</h2>
+      <h2 id="pro-title" class="modal-title">LAST TILE PRO</h2>
       <p id="pro-subtitle" class="pro-subtitle"></p>
       <ul id="pro-benefits" class="pro-benefits"></ul>
       <p id="pro-status" class="pro-status"></p>
@@ -211,24 +188,20 @@
     <div id="ad-diag-log" class="ad-diag-log"></div>
   </div>
 
-  <!-- MODAL: RISULTATO FINALE (VITTORIA / SCONFITTA) -->
+  <!-- ESITO DELLA SALA / DELLA SPEDIZIONE -->
   <div id="end-modal" class="game-modal">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog end-dialog">
       <div class="end-dialog-content">
-        <h2 id="end-title" class="end-title victory">HAI VINTO!</h2>
-        <div id="end-desc" class="end-desc">
-          Hai individuato l'unica risposta corretta tra le 10 botole!
-        </div>
-        <div id="end-detail" class="end-detail-box">
-          <!-- Dettagli storici / spiegazione -->
-        </div>
-        <button id="end-btn" class="tv-primary-btn">GIOCA UN'ALTRA FINALE</button>
+        <h2 id="end-title" class="end-title victory"></h2>
+        <div id="end-desc" class="end-desc"></div>
+        <div id="end-detail" class="end-detail-box"></div>
+        <button id="end-btn" class="tv-primary-btn"></button>
+        <button id="end-btn-2" class="tv-primary-btn secondary" hidden></button>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPT THREE.JS E LOGICA DI GIOCO -->
   <script src="/three.min.js"></script>
   <script type="module" src="/js/game.js"></script>
 </body>

@@ -1,9 +1,13 @@
-# Trap10 Quiz — pubblicazione sugli store
+# Last Tile: Trivia Temple — pubblicazione sugli store
+
+> Ottobre 2026: l'app nasceva come "Trap10 Quiz", con le regole del finale di un quiz televisivo. Rifiutata da Apple (4.3),
+> è stata ripensata come avventura originale: tempio di 10 sale, torce, corda, scelta tra uscire col tesoro o scendere.
+> Bundle id, package e ID del prodotto Pro restano quelli già registrati negli store.
 
 - Bundle id / package: `com.ikonet.trap10`
 - Versione: 1.0.0 (il numero di build lo imposta Codemagic)
 - Categoria: Giochi › Quiz (secondaria: Giochi › Giochi da tavolo/famiglia), età 4+
-- Monetizzazione: gratis con AdMob + **Trap10 Pro** non consumabile `trap10_pro`, 2,99 € (territorio base ITA)
+- Monetizzazione: gratis con AdMob + **Last Tile Pro** non consumabile `trap10_pro`, 2,99 € (territorio base ITA)
 - Lingue: it, en-US, fr-FR, es-ES, de-DE
 
 ## Già pronto nel repository
@@ -11,7 +15,7 @@
 | Cosa | Dove |
 |---|---|
 | Web app (Vite) | `index.html`, `js/`, `style.css`, `public/` |
-| Monetizzazione (UMP → ATT → AdMob, Pro, Jolly con video premio) | `js/monetization.js` |
+| Monetizzazione (UMP → ATT → AdMob, Pro, torcia extra con video premio) | `js/monetization.js` |
 | Progetti nativi | `ios/`, `android/` |
 | CI | `codemagic.yaml` (iOS con profilo in `ios/profiles/trap10_appstore.mobileprovision`, Android con keystore `trap10_android`) |
 | Schede store | `store-assets/listing.json` (verifica: `npm run check:listing`) |
@@ -27,7 +31,7 @@ Rigenerare gli screenshot: `npx vite --port 5193` e poi
 ## Da fare
 
 1. **Sito**: pubblicare `deploy/site/` sul marketing URL (con `app-ads.txt` alla radice del dominio).
-2. **App Store Connect → New App** (dal sito): iOS, nome `Trap10 Quiz: 10 Botole`, lingua principale Italiano,
+2. **App Store Connect → New App** (dal sito): iOS, nome `Last Tile: Trivia Temple` (prima `Trap10 Quiz: 10 Botole`), lingua principale Italiano,
    bundle id `com.ikonet.trap10`, SKU `trap10`, Full Access.
 3. **AdMob**: app "Trap10 Quiz iOS" e "Trap10 Quiz Android" con 4 unità ciascuna (banner, interstitial, con premio, apertura app).
    Gli ID vanno in `.env.production` (`VITE_ADMOB_*`), l'App ID iOS in `ios/App/App/Info.plist` (`GADApplicationIdentifier`)
@@ -41,5 +45,5 @@ Rigenerare gli screenshot: `npx vite --port 5193` e poi
 
 ## Note per App Review
 
-Il montepremi è virtuale. Il gioco è originale: nessun riferimento a programmi televisivi esistenti.
+Il tesoro è virtuale. Il gioco è originale: nessun riferimento a programmi televisivi esistenti.
 Il pulsante 👑 in alto apre la schermata Pro con "Ripristina acquisti".

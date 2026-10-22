@@ -1,4 +1,4 @@
-// Sound Engine per Trap10 Quiz
+// Suoni di Last Tile, sintetizzati con Web Audio (nessun file audio)
 // Generato interamente con Web Audio API: zero dipendenze esterne, zero lag!
 
 class SoundEngine {
@@ -101,7 +101,7 @@ class SoundEngine {
     }
   }
 
-  // Drone di tensione studio (basso profondo e archi sintetici)
+  // Drone di tensione della sala (basso profondo e archi sintetici)
   startTension() {
     if (this.isMuted || !this.ctx) return;
     this.stopTension();
@@ -149,7 +149,7 @@ class SoundEngine {
     }
   }
 
-  // Risposta Esatta! Tonalità trionfale da quiz televisivo
+  // La lastra regge: arpeggio luminoso
   playCorrect() {
     if (this.isMuted || !this.ctx) return;
     this.stopTension();
@@ -172,8 +172,6 @@ class SoundEngine {
       osc.start(now + idx * 0.08);
       osc.stop(now + idx * 0.08 + 0.6);
     });
-
-    this.playCheer();
   }
 
   // Lettera svelata / click tasto
@@ -210,8 +208,8 @@ class SoundEngine {
     osc.stop(now + 0.25);
   }
 
-  // Jolly "PASSO"
-  playPasso() {
+  // Salto con la corda
+  playLeap() {
     if (this.isMuted || !this.ctx) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
@@ -227,150 +225,46 @@ class SoundEngine {
     osc.stop(now + 0.35);
   }
 
-  // L'EFFETTO CLOU: LA CADUTA NELLA BOTOLA!
-  // Silenzio -> Sblocco metallico -> Risucchio d'aria -> Urlo sintetico caduta -> Tonfo nel vuoto
-  playBotolaDrop() {
+  // Lastra di pietra che si sbriciola: rombo grave, ghiaia e tonfo sul fondo del pozzo
+  playCrumble() {
     if (this.isMuted || !this.ctx) return;
-    this.stopTension();
-    this.stopHeartbeat();
-
     const now = this.ctx.currentTime;
 
-    // 1. Sblocco serratura meccanica pesante (Clang!)
-    const metalOsc = this.ctx.createOscillator();
-    const metalGain = this.ctx.createGain();
-    metalOsc.type = 'square';
-    metalOsc.frequency.setValueAtTime(140, now);
-    metalOsc.frequency.exponentialRampToValueAtTime(45, now + 0.15);
-    metalGain.gain.setValueAtTime(0.4, now);
-    metalGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-    metalOsc.connect(metalGain);
-    metalGain.connect(this.ctx.destination);
-    metalOsc.start(now);
-    metalOsc.stop(now + 0.18);
-
-    // 2. Whoosh idraulico apertura botola (rumore bianco filtrato)
-    const bufferSize = this.ctx.sampleRate * 1.5;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const len = Math.floor(this.ctx.sampleRate * 1.2);
+    const buffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < len; i++) {
+      // rumore a scatti: i "sassi" che si staccano
+      data[i] = (Math.random() * 2 - 1) * (Math.random() < 0.02 ? 1 : 0.35);
     }
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(600, now + 0.05);
-    noiseFilter.frequency.exponentialRampToValueAtTime(150, now + 1.2);
-    noiseFilter.Q.setValueAtTime(3.0, now);
-
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.35, now + 0.05);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.ctx.destination);
-    noise.start(now + 0.05);
-    noise.stop(now + 1.3);
-
-    // 3. Frequenza che precipita nel vuoto (effetto doppler caduta)
-    const fallOsc = this.ctx.createOscillator();
-    const fallGain = this.ctx.createGain();
-    fallOsc.type = 'sawtooth';
-    fallOsc.frequency.setValueAtTime(400, now + 0.1);
-    fallOsc.frequency.exponentialRampToValueAtTime(40, now + 1.1);
-
-    fallGain.gain.setValueAtTime(0.01, now + 0.1);
-    fallGain.gain.linearRampToValueAtTime(0.3, now + 0.2);
-    fallGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
-
-    fallOsc.connect(fallGain);
-    fallGain.connect(this.ctx.destination);
-    fallOsc.start(now + 0.1);
-    fallOsc.stop(now + 1.2);
-
-    // 4. Tonfo sordo nel vuoto a fine corsa
-    setTimeout(() => {
-      if (this.isMuted || !this.ctx) return;
-      const t = this.ctx.currentTime;
-      const thud = this.ctx.createOscillator();
-      const thudGain = this.ctx.createGain();
-      thud.type = 'sine';
-      thud.frequency.setValueAtTime(90, t);
-      thud.frequency.exponentialRampToValueAtTime(25, t + 0.4);
-      thudGain.gain.setValueAtTime(0.5, t);
-      thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-      thud.connect(thudGain);
-      thudGain.connect(this.ctx.destination);
-      thud.start(t);
-      thud.stop(t + 0.4);
-    }, 700);
-  }
-
-  // Rullo di tamburi e rivelazione "Piede Bianco o Nero"
-  playPiedeRoll() {
-    if (this.isMuted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    // Rullo di tamburo
-    for (let i = 0; i < 20; i++) {
-      const t = now + (i * 0.06);
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(100 + Math.random() * 20, t);
-      gain.gain.setValueAtTime(0.05 + (i * 0.008), t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.05);
-    }
-  }
-
-  playPiedeReveal() {
-    if (this.isMuted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    // Crash di piatto / Campana di vittoria
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1174.66, now); // Re acuto
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 1.2);
-  }
-
-  // Applausi e boato del pubblico
-  playCheer() {
-    if (this.isMuted || !this.ctx) return;
-    const now = this.ctx.currentTime;
-    const dur = 2.0;
-    const bufferSize = this.ctx.sampleRate * dur;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.sin(i / 100);
-    }
-    const cheer = this.ctx.createBufferSource();
-    cheer.buffer = buffer;
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1400, now);
-
+    const rubble = this.ctx.createBufferSource();
+    rubble.buffer = buffer;
+    const low = this.ctx.createBiquadFilter();
+    low.type = 'lowpass';
+    low.frequency.setValueAtTime(900, now);
+    low.frequency.exponentialRampToValueAtTime(180, now + 1.1);
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.22, now + 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-
-    cheer.connect(filter);
-    filter.connect(gain);
+    gain.gain.linearRampToValueAtTime(0.4, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
+    rubble.connect(low);
+    low.connect(gain);
     gain.connect(this.ctx.destination);
-    cheer.start(now);
-    cheer.stop(now + dur);
+    rubble.start(now);
+    rubble.stop(now + 1.2);
+
+    const thud = this.ctx.createOscillator();
+    const thudGain = this.ctx.createGain();
+    thud.type = 'sine';
+    thud.frequency.setValueAtTime(70, now + 0.55);
+    thud.frequency.exponentialRampToValueAtTime(28, now + 0.95);
+    thudGain.gain.setValueAtTime(0.001, now + 0.5);
+    thudGain.gain.linearRampToValueAtTime(0.45, now + 0.56);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
+    thud.connect(thudGain);
+    thudGain.connect(this.ctx.destination);
+    thud.start(now + 0.5);
+    thud.stop(now + 1.0);
   }
 }
 

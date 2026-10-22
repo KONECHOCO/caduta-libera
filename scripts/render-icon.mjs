@@ -11,7 +11,7 @@ await page.screenshot({ path: 'assets/icon-foreground.png' });
 
 // Splash: sfondo scuro dell'app con l'icona al centro
 await page.setViewportSize({ width: 2732, height: 2732 });
-await page.setContent(`<html><body style="margin:0;background:#040814;display:flex;align-items:center;justify-content:center;height:2732px">
+await page.setContent(`<html><body style="margin:0;background:#0d0906;display:flex;align-items:center;justify-content:center;height:2732px">
   <div style="width:700px;height:700px;border-radius:160px;overflow:hidden">${svg.replace('width="1024" height="1024"', 'width="700" height="700"')}</div></body></html>`);
 await page.screenshot({ path: 'assets/splash.png' });
 await page.screenshot({ path: 'assets/splash-dark.png' });

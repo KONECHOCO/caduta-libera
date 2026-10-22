@@ -1,4 +1,4 @@
-// Screenshot per gli store dal gioco reale (partita vera giocata in automatico), nella lingua scelta.
+// Screenshot per gli store dal gioco reale (spedizione vera giocata in automatico), nella lingua scelta.
 // Prerequisito: `npx vite --port 5193` avviato.
 // Uso: node scripts/capture-store-screenshots.mjs [iphone|ipad|android] [it|en|fr|es|de]
 import { chromium } from 'playwright';
@@ -24,9 +24,9 @@ const context = await browser.newContext({
   locale: lang
 });
 await context.addInitScript(l => {
-  localStorage.setItem('trap10.lang', l);
-  // Statistiche realistiche per la schermata di vittoria
-  localStorage.setItem('trap10.stats', JSON.stringify({ played: 23, wins: 9, totalWon: 1450000, bestWin: 300000, streak: 2, bestStreak: 4 }));
+  localStorage.setItem('lasttile.lang', l);
+  // Statistiche realistiche per le schermate di fine sala
+  localStorage.setItem('lasttile.stats', JSON.stringify({ played: 17, escapes: 9, deepest: 7, best: 4100 }));
   // Niente voce durante la cattura
   if (window.speechSynthesis) window.speechSynthesis.speak = () => {};
 }, lang);
@@ -38,58 +38,56 @@ await page.addStyleTag({ content: `
   @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=block');
   #ad-diag, #web-ad-bar { display: none !important; }
   .lang-select, .ctrl-btn .ic { font-family: 'Noto Color Emoji', var(--font-tech), sans-serif; }
+  .digital-currency { font-family: var(--font-display), 'Noto Color Emoji', serif; }
 ` });
-await page.waitForFunction(() => window.dieciBotoleGame?.gameState === 'INITIAL_CHOICE_90S', null, { timeout: 20000 });
 
+const game = fn => page.evaluate(fn);
+const waitState = st => page.waitForFunction(s => window.lastTileGame?.state === s, st, { timeout: 60000 });
 const shot = async (name, wait = 1200) => {
   await page.waitForTimeout(wait);
   await page.screenshot({ path: `${OUT}/${name}-${size.suffix}.png` });
   console.log('saved', device, lang, name);
 };
-const game = fn => page.evaluate(fn);
-const waitState = st => page.waitForFunction(s => window.dieciBotoleGame.gameState === s, st, { timeout: 60000 });
 
-// 1) Domanda con la scelta sulla botola giusta, timer in corsa
-await page.waitForTimeout(6000);
+// Spedizione già avviata: sala 4 con un po' di tesoro e due torce
+await waitState('EXPLORE');
 await game(() => {
-  const g = window.dieciBotoleGame;
-  g.selectInitialBotola(g.currentQuestion.options.findIndex(o => o.isCorrect));
+  const g = window.lastTileGame;
+  g.hall = 4;
+  g.bag = 500;
+  g.torches = 2;
+  g.startHall();
 });
-await shot('01-scelta', 2500);
+await waitState('EXPLORE');
 
-// 2) Dopo l'apertura delle 5 botole: mantieni o cambia (montepremi dimezzato)
-await game(() => window.dieciBotoleGame.lockInitialChoice());
-await waitState('DECISION_30S');
-await shot('02-decisione', 2500);
-
-// 3) Confronto diretto botola per botola
-await game(() => window.dieciBotoleGame.confirmKeepOriginalChoice());
-await waitState('CONFRONTATION_CHOICE');
+// 1) La sala: esploratore sulla lastra giusta, una lastra sbagliata già crollata con la torcia
 await game(() => {
-  const g = window.dieciBotoleGame;
-  const target = [...g.activeBotolaIndices].find(i => i !== g.selectedBotolaIndex);
-  g.startBotolaConfrontation(target);
+  const g = window.lastTileGame;
+  g.stepOn(g.question.options.findIndex(o => o.isCorrect));
+  g.useTorch();
 });
-await shot('03-confronto', 1000);
+await shot('01-sala', 3000);
 
-// 4) Vittoria
-for (;;) {
-  await page.waitForFunction(() => ['CONFRONTATION_CHOICE', 'END_GAME'].includes(window.dieciBotoleGame.gameState), null, { timeout: 60000 });
-  const done = await game(() => {
-    const g = window.dieciBotoleGame;
-    if (g.gameState === 'END_GAME') return true;
-    const target = [...g.activeBotolaIndices].find(i => i !== g.selectedBotolaIndex);
-    g.startBotolaConfrontation(target);
-    return false;
-  });
-  if (done) break;
-}
+// 2) Il crollo: restano due lastre, resti o salti con la corda?
+await game(() => window.lastTileGame.lockTile());
+await waitState('LAST_TWO');
+await shot('02-ultime-due', 2500);
+
+// 3) La lastra regge: tesoro della sala, scendere o uscire
+await game(() => window.lastTileGame.hold());
 await page.waitForSelector('#end-modal.active', { timeout: 30000 });
-await shot('04-vittoria', 1500);
+await shot('03-regge', 1500);
+
+// 4) Le regole del tempio
+await game(() => {
+  document.getElementById('end-modal').classList.remove('active');
+  document.getElementById('rules-modal').classList.add('active');
+});
+await shot('04-regole', 1200);
 
 // 5) Pro
 await game(() => {
-  document.getElementById('end-modal').classList.remove('active');
+  document.getElementById('rules-modal').classList.remove('active');
   document.getElementById('pro-btn').click();
 });
 await shot('05-pro', 1200);

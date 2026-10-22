@@ -1,148 +1,98 @@
-// Game Manager di TRAP10 QUIZ
-// Con supporto completo Multilingua (i18n): IT, EN, ES, FR, DE
+// Last Tile: Trivia Temple
+// Una spedizione attraversa fino a 10 sale. In ogni sala un enigma con 10 risposte su 10 lastre:
+// una sola regge. Torce, corda e la scelta tra uscire col tesoro o scendere più a fondo.
 
-// Font inclusi nell'app: funzionano offline e senza richieste a servizi esterni
 import '@fontsource/montserrat/400.css';
 import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/700-italic.css';
 import '@fontsource/montserrat/800.css';
 import '@fontsource/montserrat/900.css';
-import '@fontsource/orbitron/600.css';
-import '@fontsource/orbitron/800.css';
-import '@fontsource/orbitron/900.css';
-import '@fontsource/rajdhani/600.css';
-import '@fontsource/rajdhani/700.css';
+import '@fontsource/cinzel/700.css';
+import '@fontsource/cinzel/900.css';
 import { generateQuestion } from './questions.js';
 import { i18n } from './i18n.js';
 import { sound } from './sound.js';
 import { announcer } from './speech.js';
-import { Studio3D } from './studio3d.js';
+import { Temple3D } from './temple3d.js';
 import {
   initMonetization, subscribeMonetization, getMonetization, trackAdAction, setGameplayActive,
-  jollyAvailable, earnJolly, buyPro, restorePro, toggleTestAds
+  rewardAvailable, earnReward, buyPro, restorePro, toggleTestAds
 } from './monetization.js';
 
-export class DieciBotoleGame {
+const HALLS = 10;
+const HALL_TREASURE = [100, 150, 250, 400, 600, 900, 1300, 1800, 2500, 3500];
+const TORCH_HALLS = [3, 6, 9];       // sale in cui si trova una torcia in più
+const LAST_TWO_SECONDS = 15;
+const HISTORY_KEY = 'lasttile.history';
+const STATS_KEY = 'lasttile.stats';
+
+const exploreSeconds = (hall) => Math.max(25, 47 - hall * 2);
+
+export class LastTileGame {
   constructor() {
-    this.studio = null;
-    this.currentQuestion = null;
-    this.selectedBotolaIndex = -1; // botola su cui sta il campione
-    this.pendingChangeIndex = -1;  // botola provvisoria scelta durante i 30s
-    this.originalSelectedBotolaIndex = -1;
-    this.initialPrizeNum = 100000;
-    this.currentPrizeNum = 100000;
-    this.isPrizeHalved = false;
-
-    this.timerSeconds = 90;
-    this.timerInterval = null;
-    this.gameState = 'INTRO';
-
-    this.activeBotolaIndices = new Set([0,1,2,3,4,5,6,7,8,9]);
-    this.eliminatedBotolaIndices = new Set();
+    this.temple = null;
+    this.question = null;
+    this.hall = 1;
+    this.bag = 0;
+    this.torches = 1;
+    this.ropes = 1;
+    this.videoTorchUsed = false;
+    this.selected = -1;
+    this.other = -1;
+    this.crumbled = new Set();
+    this.state = 'INTRO';
     this.roundId = 0;
+    this.timerSeconds = 0;
+    this.timerMax = 1;
+    this.timerInterval = null;
+    this.timerPaused = false;
     this.history = loadJSON(HISTORY_KEY, { sigs: [], cats: [] });
-    this.stats = loadJSON(STATS_KEY, { played: 0, wins: 0, totalWon: 0, bestWin: 0, streak: 0, bestStreak: 0 });
+    this.stats = loadJSON(STATS_KEY, { played: 0, escapes: 0, deepest: 0, best: 0 });
 
-    // Referenze DOM
+    const $ = (id) => document.getElementById(id);
     this.dom = {
-      viewport3d: document.getElementById('viewport-3d'),
-      logoTop: document.getElementById('logo-text-top'),
-      logoBot: document.getElementById('logo-text-bot'),
-      modeTag: document.getElementById('mode-tag'),
-      jackpotLabel: document.getElementById('jackpot-label'),
-      prizeDisplay: document.getElementById('montepremi-val'),
-      langSelect: document.getElementById('lang-select'),
-      timerDisplay: document.getElementById('timer-display'),
-      timerCircle: document.getElementById('timer-circle-progress'),
-      timerSub: document.getElementById('timer-sub'),
-      questionCategory: document.getElementById('finale-category'),
-      questionText: document.getElementById('finale-question-text'),
-      optionsGrid: document.getElementById('options-grid'),
-      optionsBoardHeader: document.getElementById('options-board-header'),
-      statusBanner: document.getElementById('status-banner'),
-      confirmBtn: document.getElementById('confirm-botola-btn'),
-      keepChoiceBtn: document.getElementById('keep-choice-btn'),
-      changeChoiceBtn: document.getElementById('change-choice-btn'),
-      changeBtnTitle: document.getElementById('change-btn-title'),
-      changePrizeSub: document.getElementById('change-prize-sub'),
-      keepPrizeSub: document.getElementById('keep-prize-sub'),
-      rulesModal: document.getElementById('rules-modal'),
-      infoRulesBtn: document.getElementById('info-rules-btn'),
-      closeRulesBtn: document.getElementById('close-rules-btn'),
-      audioToggleBtn: document.getElementById('audio-toggle-btn'),
-      voiceToggleBtn: document.getElementById('voice-toggle-btn'),
-      cameraViewBtn: document.getElementById('camera-view-btn'),
-      endModal: document.getElementById('end-modal'),
-      endTitle: document.getElementById('end-title'),
-      endDesc: document.getElementById('end-desc'),
-      endDetail: document.getElementById('end-detail'),
-      endBtn: document.getElementById('end-btn'),
-      hintPill: document.getElementById('hint-pill'),
-      logoShield: document.getElementById('logo-shield'),
-      jollyBtn: document.getElementById('jolly-btn'),
-      jollyTitle: document.getElementById('jolly-title'),
-      jollySub: document.getElementById('jolly-sub'),
-      proBtn: document.getElementById('pro-btn'),
-      proModal: document.getElementById('pro-modal'),
-      proCloseBtn: document.getElementById('pro-close-btn'),
-      proTitle: document.getElementById('pro-title'),
-      proSubtitle: document.getElementById('pro-subtitle'),
-      proBenefits: document.getElementById('pro-benefits'),
-      proStatus: document.getElementById('pro-status'),
-      proBuyBtn: document.getElementById('pro-buy-btn'),
-      proRestoreBtn: document.getElementById('pro-restore-btn'),
-      proMessage: document.getElementById('pro-message'),
-      webAdBar: document.getElementById('web-ad-bar'),
-      webAdProBtn: document.getElementById('web-ad-pro-btn'),
-      adDiag: document.getElementById('ad-diag'),
-      adDiagToggle: document.getElementById('ad-diag-toggle'),
-      adDiagLog: document.getElementById('ad-diag-log'),
-
-      // Regole
-      rulesSub: document.getElementById('rules-sub'),
-      rulesTitle: document.getElementById('rules-title'),
-      rule1Title: document.getElementById('rule1-title'),
-      rule1Desc: document.getElementById('rule1-desc'),
-      rule2Title: document.getElementById('rule2-title'),
-      rule2Desc: document.getElementById('rule2-desc'),
-      rule3Title: document.getElementById('rule3-title'),
-      rule3Desc: document.getElementById('rule3-desc'),
-      rule4Title: document.getElementById('rule4-title'),
-      rule4Desc: document.getElementById('rule4-desc')
+      viewport: $('viewport-3d'),
+      logoTop: $('logo-text-top'), logoBot: $('logo-text-bot'), modeTag: $('mode-tag'), logoShield: $('logo-shield'),
+      hallLabel: $('hall-label'), bagLabel: $('bag-label'), bagVal: $('bag-val'),
+      langSelect: $('lang-select'),
+      timerDisplay: $('timer-display'), timerCircle: $('timer-circle-progress'), timerSub: $('timer-sub'),
+      category: $('finale-category'), questionText: $('finale-question-text'), hint: $('hint-pill'),
+      grid: $('options-grid'), boardHeader: $('options-board-header'), banner: $('status-banner'),
+      standBtn: $('stand-btn'), torchBtn: $('torch-btn'), torchTitle: $('torch-title'), torchSub: $('torch-sub'),
+      holdBtn: $('hold-btn'), holdSub: $('hold-sub'), leapBtn: $('leap-btn'), leapSub: $('leap-sub'),
+      rulesModal: $('rules-modal'), rulesBtn: $('info-rules-btn'), closeRulesBtn: $('close-rules-btn'),
+      audioBtn: $('audio-toggle-btn'), voiceBtn: $('voice-toggle-btn'), cameraBtn: $('camera-view-btn'),
+      endModal: $('end-modal'), endTitle: $('end-title'), endDesc: $('end-desc'), endDetail: $('end-detail'),
+      endBtn: $('end-btn'), endBtn2: $('end-btn-2'),
+      proBtn: $('pro-btn'), proModal: $('pro-modal'), proCloseBtn: $('pro-close-btn'), proTitle: $('pro-title'),
+      proSubtitle: $('pro-subtitle'), proBenefits: $('pro-benefits'), proStatus: $('pro-status'),
+      proBuyBtn: $('pro-buy-btn'), proRestoreBtn: $('pro-restore-btn'), proMessage: $('pro-message'),
+      webAdBar: $('web-ad-bar'), webAdProBtn: $('web-ad-pro-btn'),
+      adDiag: $('ad-diag'), adDiagToggle: $('ad-diag-toggle'), adDiagLog: $('ad-diag-log')
     };
 
-    this.init();
-  }
-
-  // setTimeout legato alla manche corrente: se nel frattempo è iniziata una nuova manche
-  // (es. cambio lingua) la callback viene ignorata
-  later(fn, ms) {
-    const round = this.roundId;
-    return setTimeout(() => {
-      if (round === this.roundId) fn();
-    }, ms);
-  }
-
-  init() {
-    this.studio = new Studio3D(this.dom.viewport3d);
-
-    this.studio.onBotolaClickCallback = (idx) => {
-      this.handleBotolaInteraction(idx);
-    };
-
-    if (this.dom.langSelect) {
-      this.dom.langSelect.value = i18n.getLanguage();
-    }
+    this.temple = new Temple3D(this.dom.viewport);
+    this.temple.onTileClick = (idx) => this.onTile(idx);
+    if (this.dom.langSelect) this.dom.langSelect.value = i18n.getLanguage();
     announcer.setLanguage(i18n.t('langCode'));
 
-    this.setupEventListeners();
-    this.updateStaticUITranslations();
+    this.bindEvents();
+    this.translateStatic();
     subscribeMonetization(st => this.onMonetizationChange(st));
-    this.startNewFinaleRound();
+    this.startExpedition();
     initMonetization();
   }
 
-  // Pulsanti della barra: icona sempre visibile, testo nascosto sugli schermi stretti
+  /** setTimeout legato alla sala corrente: ignorato se nel frattempo ne è iniziata un'altra. */
+  later(fn, ms) {
+    const round = this.roundId;
+    return setTimeout(() => { if (round === this.roundId) fn(); }, ms);
+  }
+
+  coins(n) {
+    return `${n.toLocaleString(i18n.t('langCode'))} 🪙`;
+  }
+
   setCtrl(btn, text) {
     if (!btn) return;
     const [icon, ...rest] = text.split(' ');
@@ -150,17 +100,20 @@ export class DieciBotoleGame {
     btn.title = text.replace(icon, '').trim();
   }
 
-  // Aggiorna Pro, banner e pannello diagnostico quando cambia lo stato della monetizzazione
+  setBtnText(btn, title, sub) {
+    btn.querySelector('.btn-title').textContent = title;
+    btn.querySelector('.btn-sub').textContent = sub;
+  }
+
+  // ---------- Monetizzazione ----------
   onMonetizationChange(st) {
-    // Spazio in fondo per il banner nativo o per la barra di anteprima nel browser
     const showWebBar = !st.native && !st.isPro;
     this.dom.webAdBar.hidden = !showWebBar;
     const adH = st.isPro ? 0 : st.native ? st.bannerHeight : this.dom.webAdBar.offsetHeight;
     document.documentElement.style.setProperty('--ad-h', `${adH}px`);
-
     this.dom.proBtn.classList.toggle('owned', st.isPro);
-    this.renderProModal();
-    this.updateJollyButton();
+    this.renderPro();
+    this.updateTorchButton();
 
     this.dom.adDiag.hidden = !(st.testAds && st.native);
     if (!this.dom.adDiag.hidden) {
@@ -170,13 +123,12 @@ export class DieciBotoleGame {
     }
   }
 
-  renderProModal(message) {
+  renderPro(message) {
     const st = getMonetization();
     const price = st.proPrice || i18n.t('proFallbackPrice');
-    this.dom.proTitle.textContent = 'TRAP10 PRO';
+    this.dom.proTitle.textContent = 'LAST TILE PRO';
     this.dom.proSubtitle.textContent = i18n.t('proSubtitle');
-    this.dom.proBenefits.innerHTML = ['proBenefit1', 'proBenefit2', 'proBenefit3']
-      .map(k => `<li>✔ ${i18n.t(k)}</li>`).join('');
+    this.dom.proBenefits.innerHTML = ['proBenefit1', 'proBenefit2', 'proBenefit3'].map(k => `<li>✔ ${i18n.t(k)}</li>`).join('');
     this.dom.proStatus.textContent = st.isPro ? i18n.t('proOwned') : (!st.native ? i18n.t('proWebOnly') : '');
     const canBuy = st.native && !st.isPro;
     this.dom.proBuyBtn.style.display = canBuy ? '' : 'none';
@@ -190,114 +142,56 @@ export class DieciBotoleGame {
   async runProAction(fn, okKey, failKey) {
     this.dom.proBuyBtn.disabled = true;
     this.dom.proRestoreBtn.disabled = true;
-    this.renderProModal('…');
+    this.renderPro('…');
     try {
       const ok = await fn();
-      this.renderProModal(i18n.t(ok ? okKey : failKey));
+      this.renderPro(i18n.t(ok ? okKey : failKey));
+      if (ok && this.state === 'EXPLORE') this.updateTorchButton();
     } catch (err) {
       console.warn('Pro purchase error', err);
-      this.renderProModal(i18n.t('proError'));
+      this.renderPro(i18n.t('proError'));
     } finally {
       this.dom.proBuyBtn.disabled = false;
       this.dom.proRestoreBtn.disabled = false;
     }
   }
 
-  // ---------- Jolly di Leo: elimina 2 risposte sbagliate nella fase di scelta ----------
-  updateJollyButton() {
-    if (!this.dom.jollyBtn) return;
-    const visible = this.gameState === 'INITIAL_CHOICE_90S' && !this.jollyUsed;
-    this.dom.jollyBtn.style.display = visible ? 'flex' : 'none';
-    if (!visible) return;
-    const st = getMonetization();
-    this.dom.jollyTitle.textContent = i18n.t('jollyTitle');
-    this.dom.jollySub.textContent = st.isPro || !st.native ? i18n.t('jollySubFree') : i18n.t('jollySubVideo');
-    this.dom.jollyBtn.disabled = !jollyAvailable();
-  }
-
-  async useJolly() {
-    if (this.gameState !== 'INITIAL_CHOICE_90S' || this.jollyUsed || this.jollyBusy) return;
-    this.jollyBusy = true;
-    this.timerPaused = true;
-    const round = this.roundId;
-    const earned = await earnJolly();
-    this.jollyBusy = false;
-    this.timerPaused = false;
-    if (round !== this.roundId || this.gameState !== 'INITIAL_CHOICE_90S' || !earned) {
-      this.updateJollyButton();
-      return;
-    }
-    this.jollyUsed = true;
-    this.updateJollyButton();
-
-    const candidates = this.currentQuestion.options
-      .map((opt, idx) => ({ opt, idx }))
-      .filter(({ opt, idx }) => !opt.isCorrect && idx !== this.selectedBotolaIndex && !this.eliminatedBotolaIndices.has(idx));
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    announcer.speak(i18n.t('spkJolly'), true);
-    candidates.slice(0, 2).forEach(({ idx }) => {
-      sound.playBotolaDrop();
-      this.studio.eliminateBotola(idx, () => {
-        if (round !== this.roundId) return;
-        this.activeBotolaIndices.delete(idx);
-        this.eliminatedBotolaIndices.add(idx);
-        const tile = document.getElementById(`option-tile-${idx}`);
-        if (tile) {
-          tile.classList.add('eliminated');
-          const statusEl = tile.querySelector('.tile-status');
-          if (statusEl) statusEl.textContent = i18n.t('tileEliminated');
-        }
-      });
-    });
-  }
-
-  setupEventListeners() {
+  // ---------- Eventi ----------
+  bindEvents() {
     window.addEventListener('click', () => sound.init(), { once: true });
     window.addEventListener('keydown', () => sound.init(), { once: true });
 
-    // Cambio lingua istantaneo
-    if (this.dom.langSelect) {
-      this.dom.langSelect.addEventListener('change', (e) => {
-        i18n.setLanguage(e.target.value);
-        announcer.setLanguage(i18n.t('langCode'));
-        this.updateStaticUITranslations();
-        this.startNewFinaleRound();
-      });
-    }
+    this.dom.langSelect?.addEventListener('change', (e) => {
+      i18n.setLanguage(e.target.value);
+      announcer.setLanguage(i18n.t('langCode'));
+      this.translateStatic();
+      this.startHall();
+    });
 
-    this.dom.audioToggleBtn.addEventListener('click', () => {
+    this.dom.audioBtn.addEventListener('click', () => {
       sound.init();
       const muted = sound.toggleMute();
-      this.setCtrl(this.dom.audioToggleBtn, muted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn'));
-      this.dom.audioToggleBtn.classList.toggle('muted', muted);
+      this.setCtrl(this.dom.audioBtn, i18n.t(muted ? 'btnAudioOff' : 'btnAudioOn'));
+      this.dom.audioBtn.classList.toggle('muted', muted);
+    });
+    this.dom.voiceBtn.addEventListener('click', () => {
+      const on = announcer.toggle();
+      this.setCtrl(this.dom.voiceBtn, i18n.t(on ? 'btnVoiceOn' : 'btnVoiceOff'));
+      this.dom.voiceBtn.classList.toggle('muted', !on);
+    });
+    this.dom.cameraBtn.addEventListener('click', () => {
+      if (this.selected >= 0) this.temple.setCameraOnExplorer(this.selected);
+      else this.temple.setCameraOverview();
     });
 
-    this.dom.voiceToggleBtn.addEventListener('click', () => {
-      const active = announcer.toggle();
-      this.setCtrl(this.dom.voiceToggleBtn, active ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff'));
-      this.dom.voiceToggleBtn.classList.toggle('muted', !active);
-    });
-
-    this.dom.cameraViewBtn.addEventListener('click', () => {
-      if (this.selectedBotolaIndex >= 0) {
-        this.studio.setCameraChampionOnBotola(this.selectedBotolaIndex);
-      } else {
-        this.studio.setCameraOverview();
-      }
-    });
-
-    // Modale Regole
-    this.dom.infoRulesBtn.addEventListener('click', () => {
+    this.dom.rulesBtn.addEventListener('click', () => {
       this.dom.rulesModal.classList.add('active');
       trackAdAction();
     });
+    this.dom.closeRulesBtn.addEventListener('click', () => this.dom.rulesModal.classList.remove('active'));
 
-    // Versione Pro
     const openPro = () => {
-      this.renderProModal('');
+      this.renderPro('');
       this.dom.proModal.classList.add('active');
     };
     this.dom.proBtn.addEventListener('click', openPro);
@@ -306,194 +200,125 @@ export class DieciBotoleGame {
     this.dom.proBuyBtn.addEventListener('click', () => this.runProAction(buyPro, 'proOwned', 'proError'));
     this.dom.proRestoreBtn.addEventListener('click', () => this.runProAction(restorePro, 'proRestored', 'proNotFound'));
 
-    // Jolly di Leo
-    this.dom.jollyBtn.addEventListener('click', () => this.useJolly());
-
-    // 7 tocchi sul logo: annunci di test on/off (per le build di prova), poi riaprire l'app
+    // 7 tocchi sul logo: annunci di test on/off (per le build di prova)
     let taps = { n: 0, at: 0 };
     this.dom.logoShield.addEventListener('click', () => {
       const now = Date.now();
       taps = now - taps.at < 1500 ? { n: taps.n + 1, at: now } : { n: 1, at: now };
       if (taps.n >= 7) {
         taps = { n: 0, at: 0 };
-        const on = toggleTestAds();
-        alert(i18n.t(on ? 'testAdsOn' : 'testAdsOff'));
+        alert(i18n.t(toggleTestAds() ? 'testAdsOn' : 'testAdsOff'));
       }
     });
     this.dom.adDiagToggle.addEventListener('click', () => {
       this.diagOpen = this.diagOpen === false;
       this.onMonetizationChange(getMonetization());
     });
-    this.dom.closeRulesBtn.addEventListener('click', () => {
-      this.dom.rulesModal.classList.remove('active');
-    });
 
-    // Tasto Conferma Scelta Iniziale (Fase 1)
-    this.dom.confirmBtn.addEventListener('click', () => {
-      if (this.selectedBotolaIndex >= 0 && this.gameState === 'INITIAL_CHOICE_90S') {
-        this.lockInitialChoice();
-      }
+    this.dom.standBtn.addEventListener('click', () => {
+      if (this.state === 'EXPLORE' && this.selected >= 0) this.lockTile();
     });
+    this.dom.torchBtn.addEventListener('click', () => this.useTorch());
+    this.dom.holdBtn.addEventListener('click', () => { if (this.state === 'LAST_TWO') this.hold(); });
+    this.dom.leapBtn.addEventListener('click', () => { if (this.state === 'LAST_TWO') this.leap(); });
 
-    // Tasto Mantieni Botola (Fase 3 - 30 Secondi)
-    this.dom.keepChoiceBtn.addEventListener('click', () => {
-      if (this.gameState === 'DECISION_30S') {
-        this.confirmKeepOriginalChoice();
-      }
-    });
-
-    // Tasto Cambia Botola con Dimezzamento (Fase 3 - 30 Secondi)
-    this.dom.changeChoiceBtn.addEventListener('click', () => {
-      if (this.gameState === 'DECISION_30S' && this.pendingChangeIndex >= 0) {
-        this.confirmSwitchChoice();
-      }
-    });
-
-    // Tasto Rigioca
-    this.dom.endBtn.addEventListener('click', async () => {
-      this.dom.endModal.classList.remove('active');
-      // Punto di passaggio tra due manche: qui può comparire un interstitial
-      await trackAdAction();
-      this.startNewFinaleRound();
-    });
+    // Il modale di fine sala ha fino a due scelte, decise da showEnd()
+    this.dom.endBtn.addEventListener('click', () => this.endChoice(this.endActions?.[0]));
+    this.dom.endBtn2.addEventListener('click', () => this.endChoice(this.endActions?.[1]));
   }
 
-  // Aggiorna tutti i testi dell'interfaccia nella lingua selezionata
-  updateStaticUITranslations() {
-    if (this.dom.logoTop) this.dom.logoTop.textContent = i18n.t('logoTop');
-    if (this.dom.logoBot) this.dom.logoBot.textContent = i18n.t('logoBot');
-    if (this.dom.modeTag) this.dom.modeTag.textContent = i18n.t('modeTag');
-    if (this.dom.jackpotLabel) this.dom.jackpotLabel.textContent = i18n.t('jackpotLabel');
-
-    this.setCtrl(this.dom.infoRulesBtn, i18n.t('btnRules'));
-    this.setCtrl(this.dom.audioToggleBtn, sound.isMuted ? i18n.t('btnAudioOff') : i18n.t('btnAudioOn'));
-    this.setCtrl(this.dom.voiceToggleBtn, announcer.enabled ? i18n.t('btnVoiceOn') : i18n.t('btnVoiceOff'));
-    this.setCtrl(this.dom.cameraViewBtn, i18n.t('btnCamera'));
+  translateStatic() {
+    this.dom.logoTop.textContent = i18n.t('logoTop');
+    this.dom.logoBot.textContent = i18n.t('logoBot');
+    this.dom.modeTag.textContent = i18n.t('modeTag');
+    this.dom.bagLabel.textContent = i18n.t('bagLabel');
+    this.setCtrl(this.dom.rulesBtn, i18n.t('btnRules'));
+    this.setCtrl(this.dom.audioBtn, i18n.t(sound.isMuted ? 'btnAudioOff' : 'btnAudioOn'));
+    this.setCtrl(this.dom.voiceBtn, i18n.t(announcer.enabled ? 'btnVoiceOn' : 'btnVoiceOff'));
+    this.setCtrl(this.dom.cameraBtn, i18n.t('btnCamera'));
     this.setCtrl(this.dom.proBtn, '👑 PRO');
-    this.renderProModal();
-
-    // Bottoni azione
-    const confirmTitle = this.dom.confirmBtn.querySelector('.btn-title');
-    const confirmSub = this.dom.confirmBtn.querySelector('.btn-sub');
-    if (confirmTitle) confirmTitle.textContent = i18n.t('btnConfirmTitle');
-    if (confirmSub) confirmSub.textContent = i18n.t('btnConfirmSub');
-
-    const keepTitle = this.dom.keepChoiceBtn.querySelector('.btn-title');
-    if (keepTitle) keepTitle.textContent = i18n.t('btnKeepTitle');
-    if (this.dom.keepPrizeSub) {
-      this.dom.keepPrizeSub.textContent = i18n.t('btnKeepSub', { prize: this.formatPrize(this.currentPrizeNum) });
+    this.setBtnText(this.dom.standBtn, i18n.t('btnStandTitle'), i18n.t('btnStandSub'));
+    for (const k of ['rulesSub', 'rulesTitle', 'rule1Title', 'rule1Desc', 'rule2Title', 'rule2Desc',
+      'rule3Title', 'rule3Desc', 'rule4Title', 'rule4Desc']) {
+      const el = document.getElementById(k.replace(/([A-Z])/g, '-$1').toLowerCase()); // rule1Title → rule1-title
+      if (el) el.textContent = i18n.t(k);
     }
-
-    if (this.dom.changeBtnTitle) this.dom.changeBtnTitle.textContent = i18n.t('btnChangeTitle');
-    if (this.dom.changePrizeSub) {
-      const half = Math.floor(this.currentPrizeNum / 2);
-      this.dom.changePrizeSub.textContent = i18n.t('btnChangeSub', { prize: this.formatPrize(half) });
-    }
-
-    // Regole
-    if (this.dom.rulesSub) this.dom.rulesSub.textContent = i18n.t('rulesSub');
-    if (this.dom.rulesTitle) this.dom.rulesTitle.textContent = i18n.t('rulesTitle');
-    if (this.dom.rule1Title) this.dom.rule1Title.textContent = i18n.t('rule1Title');
-    if (this.dom.rule1Desc) this.dom.rule1Desc.textContent = i18n.t('rule1Desc');
-    if (this.dom.rule2Title) this.dom.rule2Title.textContent = i18n.t('rule2Title');
-    if (this.dom.rule2Desc) this.dom.rule2Desc.textContent = i18n.t('rule2Desc');
-    if (this.dom.rule3Title) this.dom.rule3Title.textContent = i18n.t('rule3Title');
-    if (this.dom.rule3Desc) this.dom.rule3Desc.textContent = i18n.t('rule3Desc');
-    if (this.dom.rule4Title) this.dom.rule4Title.textContent = i18n.t('rule4Title');
-    if (this.dom.rule4Desc) this.dom.rule4Desc.textContent = i18n.t('rule4Desc');
-    if (this.dom.closeRulesBtn) this.dom.closeRulesBtn.textContent = i18n.t('btnCloseRules');
-
-    if (this.dom.endBtn) this.dom.endBtn.textContent = i18n.t('btnPlayAgain');
+    this.dom.closeRulesBtn.textContent = i18n.t('btnCloseRules');
+    this.renderPro();
+    this.updateHud();
   }
 
-  // =========================================================================
-  // FASE 0: INIZIALIZZAZIONE NUOVA MANCHE CON LINGUA ATTIVA
-  // =========================================================================
-  startNewFinaleRound() {
+  updateHud() {
+    this.dom.hallLabel.textContent = i18n.t('hallLabel', { n: this.hall });
+    this.dom.bagVal.textContent = this.coins(this.bag);
+  }
+
+  // ---------- Spedizione e sale ----------
+  startExpedition() {
+    this.hall = 1;
+    this.bag = 0;
+    this.torches = 1;
+    this.ropes = 1;
+    this.enterHall();
+  }
+
+  /** Entrata in una nuova sala: torce trovate (sale 3, 6, 9) e torcia Pro, poi la sala. */
+  enterHall() {
+    if (TORCH_HALLS.includes(this.hall)) this.torches++;
+    if (getMonetization().isPro) this.torches++;
+    this.startHall();
+  }
+
+  /** Prepara la sala corrente (anche quando cambia la lingua: nuovo enigma, stesse risorse). */
+  startHall() {
     this.roundId++;
     clearInterval(this.timerInterval);
     sound.stopTension();
     sound.stopHeartbeat();
+    this.dom.endModal.classList.remove('active');
 
-    this.currentQuestion = generateQuestion(i18n.getLanguage(), {
+    this.question = generateQuestion(i18n.getLanguage(), {
       recentSigs: this.history.sigs,
       recentCats: this.history.cats.slice(-2)
     });
-    this.history.sigs = [...this.history.sigs, this.currentQuestion.sig].slice(-80);
-    this.history.cats = [...this.history.cats, this.currentQuestion.catKey].slice(-4);
+    this.history.sigs = [...this.history.sigs, this.question.sig].slice(-80);
+    this.history.cats = [...this.history.cats, this.question.catKey].slice(-4);
     saveJSON(HISTORY_KEY, this.history);
 
-    this.initialPrizeNum = this.currentQuestion.prizeValue || 100000;
-    this.currentPrizeNum = this.initialPrizeNum;
-    this.isPrizeHalved = false;
-
-    this.selectedBotolaIndex = -1;
-    this.pendingChangeIndex = -1;
-    this.originalSelectedBotolaIndex = -1;
-    this.activeBotolaIndices = new Set([0,1,2,3,4,5,6,7,8,9]);
-    this.eliminatedBotolaIndices = new Set();
-    this.gameState = 'INTRO';
-    this.jollyUsed = false;
+    this.selected = -1;
+    this.other = -1;
+    this.crumbled = new Set();
+    this.videoTorchUsed = false;
     this.timerPaused = false;
+    this.state = 'INTRO';
     setGameplayActive(true);
 
-    // Aggiorna UI
-    this.updatePrizeDisplay();
-    if (this.dom.timerDisplay) {
-      this.dom.timerDisplay.classList.remove('urgent', 'confront-mode');
-      this.dom.timerDisplay.textContent = "90";
-    }
-    if (this.dom.timerCircle) {
-      this.dom.timerCircle.classList.remove('urgent', 'confront-mode');
-      this.dom.timerCircle.style.strokeDashoffset = "0";
-    }
-    if (this.dom.timerSub) {
-      this.dom.timerSub.textContent = "SEC";
-    }
-    this.dom.questionCategory.textContent = this.currentQuestion.category;
-    this.dom.questionText.textContent = this.currentQuestion.question;
-    this.dom.hintPill.textContent = this.currentQuestion.hint ? `💡 ${this.currentQuestion.hint}` : '';
-    this.dom.hintPill.style.display = this.currentQuestion.hint ? '' : 'none';
-    this.dom.optionsBoardHeader.textContent = i18n.t('boardHeader');
+    this.updateHud();
+    this.dom.category.textContent = this.question.category;
+    this.dom.questionText.textContent = this.question.question;
+    this.dom.hint.textContent = this.question.hint ? `💡 ${this.question.hint}` : '';
+    this.dom.hint.style.display = this.question.hint ? '' : 'none';
+    this.dom.boardHeader.textContent = i18n.t('boardHeader');
+    this.dom.banner.textContent = i18n.t('bannerHall', { n: this.hall });
+    this.dom.banner.className = 'status-banner intro';
 
-    this.dom.confirmBtn.style.display = 'flex';
-    this.dom.confirmBtn.disabled = true;
-    this.dom.keepChoiceBtn.style.display = 'none';
-    this.dom.changeChoiceBtn.style.display = 'none';
+    this.dom.standBtn.style.display = 'flex';
+    this.dom.standBtn.disabled = true;
+    this.dom.holdBtn.style.display = 'none';
+    this.dom.leapBtn.style.display = 'none';
+    this.resetTimerDisplay(exploreSeconds(this.hall));
 
-    this.dom.statusBanner.textContent = i18n.t('bannerIntro');
-    this.dom.statusBanner.className = "status-banner intro";
+    this.temple.setHall(this.question.options, this.hall);
+    this.renderBoard();
 
-    this.studio.setQuestionOptions(this.currentQuestion.options);
-    this.render2DOptionsBoard();
-
-    // Leo, il conduttore virtuale, nella lingua attiva
-    announcer.speak(i18n.t('spkIntro', {
-      prize: this.formatPrize(this.currentPrizeNum),
-      cat: this.currentQuestion.category,
-      q: this.currentQuestion.question
-    }));
-
-    this.later(() => {
-      this.startInitialChoicePhase();
-    }, 3200);
+    const intro = i18n.t('spkHall', { n: this.hall, cat: this.question.category, q: this.question.question });
+    announcer.speak(this.hall === 1 ? `${i18n.t('spkWelcome')} ${intro}` : intro);
+    this.later(() => this.startExplore(), 2600);
   }
 
-  updatePrizeDisplay() {
-    this.dom.prizeDisplay.textContent = this.formatPrize(this.currentPrizeNum);
-  }
-
-  // Montepremi virtuale (nessun denaro reale) nel formato della lingua attiva
-  formatPrize(num) {
-    const lang = i18n.getLanguage();
-    if (lang === 'en') return `$${num.toLocaleString('en-US')}`;
-    if (lang === 'it') return `€ ${num.toLocaleString('it-IT')}`;
-    return `${num.toLocaleString(i18n.t('langCode'))} €`;
-  }
-
-  render2DOptionsBoard() {
-    this.dom.optionsGrid.innerHTML = '';
-    this.currentQuestion.options.forEach((opt, idx) => {
+  renderBoard() {
+    this.dom.grid.innerHTML = '';
+    this.question.options.forEach((opt, idx) => {
       const card = document.createElement('div');
       card.className = 'option-tile';
       card.id = `option-tile-${idx}`;
@@ -502,552 +327,413 @@ export class DieciBotoleGame {
         <div class="tile-text">${opt.text}</div>
         <div class="tile-status">${opt.id}</div>
       `;
-
-      card.addEventListener('click', () => {
-        this.handleBotolaInteraction(idx);
-      });
-
-      this.dom.optionsGrid.appendChild(card);
+      card.addEventListener('click', () => this.onTile(idx));
+      this.dom.grid.appendChild(card);
     });
   }
 
-  // =========================================================================
-  // GESTORE CLICK BOTOLA UNIFICATO
-  // =========================================================================
-  handleBotolaInteraction(idx) {
-    if (this.eliminatedBotolaIndices.has(idx)) return;
-
-    if (this.gameState === 'INITIAL_CHOICE_90S') {
-      this.selectInitialBotola(idx);
-    } else if (this.gameState === 'DECISION_30S') {
-      this.selectPendingChangeBotola(idx);
-    } else if (this.gameState === 'CONFRONTATION_CHOICE') {
-      if (idx !== this.selectedBotolaIndex) {
-        this.startBotolaConfrontation(idx);
-      }
-    }
+  tileEl(idx) {
+    return document.getElementById(`option-tile-${idx}`);
   }
 
-  // =========================================================================
-  // FASE 1: SCELTA INIZIALE (90 SECONDI)
-  // =========================================================================
-  startInitialChoicePhase() {
-    this.gameState = 'INITIAL_CHOICE_90S';
-    this.timerSeconds = 90;
-    this.dom.timerSub.textContent = "SEC";
-    this.updateTimerUI(90);
+  setTileStatus(idx, cls, text) {
+    const el = this.tileEl(idx);
+    if (!el) return;
+    if (cls) el.classList.add(cls);
+    const s = el.querySelector('.tile-status');
+    if (s && text !== undefined) s.textContent = text;
+  }
 
+  onTile(idx) {
+    if (this.crumbled.has(idx)) return;
+    if (this.state === 'EXPLORE') this.stepOn(idx);
+  }
+
+  // ---------- Fase 1: esplorazione ----------
+  startExplore() {
+    this.state = 'EXPLORE';
+    const secs = exploreSeconds(this.hall);
+    this.startTimer(secs, () => {
+      if (this.selected < 0) {
+        const free = this.question.options.map((_, i) => i).filter(i => !this.crumbled.has(i));
+        this.stepOn(free[Math.floor(Math.random() * free.length)]);
+      }
+      this.lockTile();
+    });
     sound.startTension();
     sound.startHeartbeat(65);
-
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase1');
-    this.dom.statusBanner.className = "status-banner thinking";
-    this.updateJollyButton();
-
-    announcer.speak(i18n.t('spkPhase1'));
-
-    this.timerInterval = setInterval(() => {
-      if (this.timerPaused) return;
-      this.timerSeconds--;
-      this.updateTimerUI(90);
-
-      if (this.timerSeconds <= 15) {
-        sound.setHeartbeatBpm(130);
-        sound.playTick(1200);
-        this.studio.setTensionMode(true);
-      } else if (this.timerSeconds <= 45) {
-        sound.setHeartbeatBpm(90);
-        sound.playTick(900);
-      } else {
-        sound.playTick(750);
-      }
-
-      if (this.timerSeconds <= 0) {
-        clearInterval(this.timerInterval);
-        if (this.selectedBotolaIndex < 0) this.selectInitialBotola(Math.floor(Math.random() * 10));
-        this.lockInitialChoice();
-      }
-    }, 1000);
+    this.dom.banner.textContent = i18n.t('bannerExplore', { sec: secs });
+    this.dom.banner.className = 'status-banner thinking';
+    this.updateTorchButton();
+    announcer.speak(i18n.t('spkExplore'));
   }
 
-  selectInitialBotola(idx) {
-    this.selectedBotolaIndex = idx;
-    const opt = this.currentQuestion.options[idx];
-
-    this.studio.moveChampionToBotola(idx);
+  stepOn(idx) {
+    this.selected = idx;
+    const opt = this.question.options[idx];
+    this.temple.moveExplorerTo(idx);
     sound.playKeypress();
-
     document.querySelectorAll('.option-tile').forEach((tile, i) => {
       tile.classList.toggle('selected', i === idx);
-      const statusEl = tile.querySelector('.tile-status');
-      if (statusEl) {
-        statusEl.textContent = (i === idx) ? i18n.t('tileChampion') : `${i + 1}`;
-      }
+      const s = tile.querySelector('.tile-status');
+      if (s && !this.crumbled.has(i)) s.textContent = i === idx ? i18n.t('tileMine') : `${i + 1}`;
     });
-
-    this.dom.confirmBtn.disabled = false;
-    this.dom.statusBanner.textContent = i18n.t('bannerChosen', { num: idx + 1, text: opt.text });
+    this.dom.standBtn.disabled = false;
+    this.dom.banner.textContent = i18n.t('bannerChosen', { num: idx + 1, text: opt.text });
+    this.updateTorchButton();
   }
 
-  lockInitialChoice() {
-    if (this.jollyBusy) return;
-    clearInterval(this.timerInterval);
-    this.originalSelectedBotolaIndex = this.selectedBotolaIndex;
-    this.dom.confirmBtn.disabled = true;
-    this.gameState = 'LOCKED';
-    this.updateJollyButton();
+  remaining() {
+    return this.question.options.map((_, i) => i).filter(i => !this.crumbled.has(i));
+  }
 
-    const opt = this.currentQuestion.options[this.selectedBotolaIndex];
+  /** Torcia: almeno 4 lastre in piedi, così ne restano sempre una sbagliata oltre alla tua. */
+  torchUsable() {
+    return this.state === 'EXPLORE' && this.remaining().length >= 4;
+  }
+
+  updateTorchButton() {
+    const btn = this.dom.torchBtn;
+    if (this.state !== 'EXPLORE') {
+      btn.style.display = 'none';
+      return;
+    }
+    const st = getMonetization();
+    btn.style.display = 'flex';
+    if (this.torches > 0) {
+      this.dom.torchTitle.textContent = i18n.t('torchTitle', { n: this.torches });
+      this.dom.torchSub.textContent = i18n.t('torchSub');
+      btn.disabled = !this.torchUsable();
+    } else if (!this.videoTorchUsed) {
+      this.dom.torchTitle.textContent = i18n.t('torchVideoTitle');
+      this.dom.torchSub.textContent = st.native ? i18n.t('torchVideoSub') : i18n.t('torchSub');
+      btn.disabled = !this.torchUsable() || !rewardAvailable();
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  async useTorch() {
+    if (!this.torchUsable() || this.torchBusy) return;
+    const round = this.roundId;
+    if (this.torches <= 0) {
+      if (this.videoTorchUsed) return;
+      this.torchBusy = true;
+      this.timerPaused = true;
+      const earned = await earnReward();
+      this.torchBusy = false;
+      this.timerPaused = false;
+      if (round !== this.roundId || this.state !== 'EXPLORE' || !earned) return this.updateTorchButton();
+      this.videoTorchUsed = true;
+      this.torches++;
+    }
+    this.torches--;
+
+    const wrong = this.remaining().filter(i => !this.question.options[i].isCorrect && i !== this.selected);
+    const target = wrong[Math.floor(Math.random() * wrong.length)];
+    this.crumbled.add(target);
+    this.updateTorchButton();
+    announcer.speak(i18n.t('spkTorch'), true);
+    sound.playCrumble();
+    this.temple.crumbleTile(target, () => {
+      if (round !== this.roundId) return;
+      this.setTileStatus(target, 'eliminated', i18n.t('tileCrumbled'));
+    });
+  }
+
+  lockTile() {
+    if (this.torchBusy || this.state !== 'EXPLORE') return;
+    clearInterval(this.timerInterval);
+    this.state = 'COLLAPSE';
+    this.updateTorchButton();
+    this.dom.standBtn.style.display = 'none';
+    const opt = this.question.options[this.selected];
     announcer.speak(i18n.t('spkLocked', { id: opt.id, text: opt.text }), true);
 
-    this.later(() => {
-      this.runAutoElimination5();
-    }, 1800);
-  }
-
-  // =========================================================================
-  // FASE 2: IL PROGRAMMA ELIMINA 5 RISPOSTE SBAGLIATE
-  // =========================================================================
-  runAutoElimination5() {
-    this.gameState = 'AUTO_ELIMINATING_5';
-    this.dom.confirmBtn.style.display = 'none';
-
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase2');
-    this.dom.statusBanner.className = "status-banner locked";
-
-    announcer.speak(i18n.t('spkPhase2'));
-
-    const wrongCandidateIndices = [];
-    this.currentQuestion.options.forEach((opt, idx) => {
-      if (!opt.isCorrect && idx !== this.selectedBotolaIndex) {
-        wrongCandidateIndices.push(idx);
-      }
-    });
-
-    // Fisher-Yates: estrazione uniforme delle 5 botole da aprire
-    for (let i = wrongCandidateIndices.length - 1; i > 0; i--) {
+    // L'altra lastra che resterà in piedi: la giusta se sei su una sbagliata, altrimenti una sbagliata a caso
+    const others = this.remaining().filter(i => i !== this.selected);
+    if (opt.isCorrect) {
+      const wrong = others.filter(i => !this.question.options[i].isCorrect);
+      this.other = wrong[Math.floor(Math.random() * wrong.length)];
+    } else {
+      this.other = others.find(i => this.question.options[i].isCorrect);
+    }
+    const toFall = others.filter(i => i !== this.other);
+    for (let i = toFall.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [wrongCandidateIndices[i], wrongCandidateIndices[j]] = [wrongCandidateIndices[j], wrongCandidateIndices[i]];
+      [toFall[i], toFall[j]] = [toFall[j], toFall[i]];
     }
-    const fiveToDrop = wrongCandidateIndices.slice(0, 5);
 
     this.later(() => {
-      this.dropBatchSequentially(fiveToDrop, 0, () => {
-        this.later(() => {
-          this.start30SecondsDecisionPhase();
-        }, 1500);
-      });
-    }, 1200);
+      this.dom.banner.textContent = i18n.t('bannerCollapse');
+      this.dom.banner.className = 'status-banner locked';
+      announcer.speak(i18n.t('spkCollapse'));
+      this.temple.setCameraOverview();
+      this.temple.shakeCamera(0.35);
+      this.collapse(toFall, 0);
+    }, 1400);
   }
 
-  dropBatchSequentially(indices, currentIdx, onComplete) {
-    if (currentIdx >= indices.length) {
-      if (onComplete) onComplete();
+  // ---------- Fase 2: il crollo ----------
+  collapse(list, k) {
+    if (k >= list.length) {
+      this.later(() => this.startLastTwo(), 900);
       return;
     }
-
-    const botolaIdx = indices[currentIdx];
-    const opt = this.currentQuestion.options[botolaIdx];
-
-    announcer.speak(i18n.t('spkDropBotola', { id: opt.id }));
-
-    const round = this.roundId;
-    this.later(() => {
-      sound.playBotolaDrop();
-      this.studio.eliminateBotola(botolaIdx, () => {
-        if (round !== this.roundId) return;
-        this.activeBotolaIndices.delete(botolaIdx);
-        this.eliminatedBotolaIndices.add(botolaIdx);
-
-        const tile = document.getElementById(`option-tile-${botolaIdx}`);
-        if (tile) {
-          tile.classList.add('eliminated');
-          const statusEl = tile.querySelector('.tile-status');
-          if (statusEl) statusEl.textContent = i18n.t('tileEliminated');
-        }
-
-        this.later(() => {
-          this.dropBatchSequentially(indices, currentIdx + 1, onComplete);
-        }, 1600);
-      });
-    }, 1200);
+    const idx = list[k];
+    this.crumbled.add(idx);
+    sound.playCrumble();
+    this.temple.crumbleTile(idx, () => this.setTileStatus(idx, 'eliminated', i18n.t('tileCrumbled')));
+    this.later(() => this.collapse(list, k + 1), 650);
   }
 
-  // =========================================================================
-  // FASE 3: I 30 SECONDI PER RIFLETTERE & DIMEZZARE
-  // =========================================================================
-  start30SecondsDecisionPhase() {
-    this.gameState = 'DECISION_30S';
-    this.pendingChangeIndex = -1;
-    this.timerSeconds = 30;
-    this.dom.timerSub.textContent = "SEC";
-    this.updateTimerUI(30);
+  // ---------- Fase 3: le ultime due lastre ----------
+  startLastTwo() {
+    this.state = 'LAST_TWO';
+    this.dom.boardHeader.textContent = i18n.t('boardHeaderLast');
+    const mine = this.question.options[this.selected];
+    const other = this.question.options[this.other];
+    this.setTileStatus(this.other, 'other-tile', i18n.t('tileOther'));
+    this.temple.setCameraOnExplorer(this.selected);
 
-    this.studio.setCameraChampionOnBotola(this.selectedBotolaIndex);
-    this.studio.setTensionMode(false);
-    sound.startHeartbeat(75);
-
-    this.dom.keepChoiceBtn.style.display = 'flex';
-    this.dom.changeChoiceBtn.style.display = 'flex';
-    this.dom.changeChoiceBtn.disabled = true;
-
-    this.dom.keepPrizeSub.textContent = i18n.t('btnKeepSub', { prize: this.formatPrize(this.currentPrizeNum) });
-    const halfPrize = Math.floor(this.currentPrizeNum / 2);
-    this.dom.changePrizeSub.textContent = i18n.t('btnChangeSub', { prize: this.formatPrize(halfPrize) });
-    this.dom.changeBtnTitle.textContent = i18n.t('btnChangeTitle');
-
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase3');
-    this.dom.statusBanner.className = "status-banner thinking";
-
-    announcer.speak(i18n.t('spkPhase3'));
-
-    this.timerInterval = setInterval(() => {
-      if (this.timerPaused) return;
-      this.timerSeconds--;
-      this.updateTimerUI(30);
-
-      if (this.timerSeconds <= 8) {
-        sound.setHeartbeatBpm(130);
-        sound.playTick(1200);
-        this.studio.setTensionMode(true);
-      } else {
-        sound.playTick(800);
-      }
-
-      if (this.timerSeconds <= 0) {
-        clearInterval(this.timerInterval);
-        if (this.pendingChangeIndex >= 0) {
-          this.confirmSwitchChoice();
-        } else {
-          this.confirmKeepOriginalChoice();
-        }
-      }
-    }, 1000);
-  }
-
-  selectPendingChangeBotola(idx) {
-    if (idx === this.selectedBotolaIndex) {
-      this.pendingChangeIndex = -1;
-      this.studio.moveChampionToBotola(this.selectedBotolaIndex);
-      this.dom.changeChoiceBtn.disabled = true;
-      this.dom.changeBtnTitle.textContent = i18n.t('btnChangeTitle');
-      return;
+    this.dom.holdBtn.style.display = 'flex';
+    this.setBtnText(this.dom.holdBtn, i18n.t('btnHoldTitle'), i18n.t('btnHoldSub', { num: mine.id }));
+    const canLeap = this.ropes > 0;
+    this.dom.leapBtn.style.display = canLeap ? 'flex' : 'none';
+    if (canLeap) {
+      this.setBtnText(this.dom.leapBtn, i18n.t('btnLeapTitle'), i18n.t('btnLeapSub', { num: other.id, n: this.ropes }));
     }
 
-    this.pendingChangeIndex = idx;
-    const halfPrize = Math.floor(this.currentPrizeNum / 2);
+    this.dom.banner.textContent = i18n.t(canLeap ? 'bannerLastTwo' : 'bannerLastTwoNoRope', { mine: mine.id, other: other.id });
+    this.dom.banner.className = 'status-banner verdict';
+    announcer.speak(i18n.t(canLeap ? 'spkLastTwo' : 'spkLastTwoNoRope', { id: other.id }));
+    sound.startHeartbeat(85);
 
-    this.studio.moveChampionToBotola(idx);
-    sound.playKeypress();
-
-    document.querySelectorAll('.option-tile').forEach((tile, i) => {
-      tile.classList.remove('selected');
-      if (i === idx) tile.classList.add('selected');
-      if (i === this.selectedBotolaIndex) {
-        const s = tile.querySelector('.tile-status');
-        if (s) s.textContent = i18n.t('tileOriginal');
-      }
-    });
-
-    this.dom.changeChoiceBtn.disabled = false;
-    this.dom.changeBtnTitle.textContent = i18n.t('btnChangeConfirm', { num: idx + 1 });
-    this.dom.changePrizeSub.textContent = i18n.t('btnChangeSub', { prize: this.formatPrize(halfPrize) });
+    if (!canLeap) {
+      this.later(() => this.hold(), 3500);
+      return;
+    }
+    this.startTimer(LAST_TWO_SECONDS, () => this.hold());
   }
 
-  setTimerToConfrontationMode(icon = "VS", sub = null) {
-    this.dom.timerDisplay.textContent = icon;
-    this.dom.timerSub.textContent = sub || i18n.t('confrontDuel') || "DUELLO";
-    this.dom.timerCircle.style.strokeDashoffset = "0";
-    this.dom.timerDisplay.classList.remove('urgent');
-    this.dom.timerCircle.classList.remove('urgent');
-    this.dom.timerDisplay.classList.add('confront-mode');
-    this.dom.timerCircle.classList.add('confront-mode');
-  }
-
-  confirmKeepOriginalChoice() {
+  hold() {
+    if (this.state !== 'LAST_TWO') return;
     clearInterval(this.timerInterval);
-    sound.stopHeartbeat();
-    this.pendingChangeIndex = -1;
-
-    // Aggiorna subito il timer in modalità duello (niente più secondi bloccati a schermo!)
-    this.setTimerToConfrontationMode("VS", i18n.t('confrontDuel') || "DUELLO");
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase3Confirmed');
-    this.dom.statusBanner.className = "status-banner locked";
-
-    this.studio.moveChampionToBotola(this.selectedBotolaIndex);
-    announcer.speak(i18n.t('spkKeepConfirm', { id: this.selectedBotolaIndex + 1, prize: this.formatPrize(this.currentPrizeNum) }), true);
-
-    this.prepareConfrontationPhase();
+    announcer.speak(i18n.t('spkHold', { id: this.selected + 1 }), true);
+    this.reveal();
   }
 
-  confirmSwitchChoice() {
+  leap() {
+    if (this.state !== 'LAST_TWO' || this.ropes <= 0) return;
     clearInterval(this.timerInterval);
-    sound.stopHeartbeat();
-
-    this.selectedBotolaIndex = this.pendingChangeIndex;
-    this.pendingChangeIndex = -1;
-    this.isPrizeHalved = true;
-    this.currentPrizeNum = Math.floor(this.currentPrizeNum / 2);
-    this.updatePrizeDisplay();
-
-    // Aggiorna subito il timer in modalità duello
-    this.setTimerToConfrontationMode("VS", i18n.t('confrontDuel') || "DUELLO");
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase3Confirmed');
-    this.dom.statusBanner.className = "status-banner locked";
-
-    sound.playPasso();
-    const opt = this.currentQuestion.options[this.selectedBotolaIndex];
-    announcer.speak(i18n.t('spkChangeConfirm', { id: opt.id, prize: this.formatPrize(this.currentPrizeNum) }), true);
-
-    this.prepareConfrontationPhase();
+    this.ropes--;
+    const from = this.selected;
+    this.selected = this.other;
+    this.other = from;
+    sound.playLeap();
+    this.temple.moveExplorerTo(this.selected);
+    this.tileEl(from)?.classList.remove('selected');
+    this.tileEl(this.selected)?.classList.remove('other-tile');
+    this.setTileStatus(this.selected, 'selected', i18n.t('tileMine'));
+    this.setTileStatus(from, null, i18n.t('tileOther'));
+    announcer.speak(i18n.t('spkLeap', { id: this.selected + 1 }), true);
+    this.reveal();
   }
 
-  // =========================================================================
-  // FASE 4: IL CONFRONTO PROGRESSIVO ("SCEGLI QUALE BOTOLA CONFRONTARE")
-  // =========================================================================
-  prepareConfrontationPhase() {
-    this.gameState = 'PREPARING_CONFRONTATION';
-    this.dom.keepChoiceBtn.style.display = 'none';
-    this.dom.changeChoiceBtn.style.display = 'none';
-
-    this.later(() => {
-      this.startConfrontationChoice();
-    }, 1100);
-  }
-
-  startConfrontationChoice() {
-    this.gameState = 'CONFRONTATION_CHOICE';
-
-    this.studio.setCameraOverview();
-    this.studio.setTensionMode(false);
-    sound.startTension();
-
-    this.setTimerToConfrontationMode("VS", i18n.t('confrontDuel') || "DUELLO");
-
-    const chosenOpt = this.currentQuestion.options[this.selectedBotolaIndex];
-    const remainingOpponentsCount = this.activeBotolaIndices.size - 1;
-
-    this.dom.statusBanner.textContent = i18n.t('bannerPhase4', { myId: chosenOpt.id, rem: remainingOpponentsCount });
-    this.dom.statusBanner.className = "status-banner verdict";
-    this.dom.optionsBoardHeader.textContent = i18n.t('boardHeaderConfront', { myId: chosenOpt.id });
-
-    document.querySelectorAll('.option-tile').forEach((tile, i) => {
-      tile.classList.remove('confrontable', 'challenging');
-      if (this.activeBotolaIndices.has(i)) {
-        if (i === this.selectedBotolaIndex) {
-          tile.classList.add('selected');
-          const s = tile.querySelector('.tile-status');
-          if (s) s.textContent = i18n.t('tileChampion');
-        } else {
-          tile.classList.add('confrontable');
-          const s = tile.querySelector('.tile-status');
-          if (s) s.textContent = i18n.t('tileConfront');
-        }
-      } else {
-        tile.classList.add('eliminated');
-        const s = tile.querySelector('.tile-status');
-        if (s) s.textContent = i18n.t('tileEliminated');
-      }
-    });
-
-    announcer.speak(i18n.t('spkPhase4', { id: chosenOpt.id }));
-  }
-
-  startBotolaConfrontation(targetIdx) {
-    if (this.gameState === 'CONFRONTING' || this.gameState === 'END_GAME') return;
-    if (!this.activeBotolaIndices.has(targetIdx) || targetIdx === this.selectedBotolaIndex) return;
-
-    this.gameState = 'CONFRONTING';
-    const targetOpt = this.currentQuestion.options[targetIdx];
-    const myOpt = this.currentQuestion.options[this.selectedBotolaIndex];
-
-    // Aggiorna subito le tessere graficamente
-    document.querySelectorAll('.option-tile').forEach((t, i) => {
-      t.classList.remove('confrontable');
-      if (i === targetIdx) {
-        t.classList.add('challenging');
-        const s = t.querySelector('.tile-status');
-        if (s) s.textContent = i18n.t('tileChallenging') || "⚔️ IN CONFRONTO...";
-      } else if (this.activeBotolaIndices.has(i) && i !== this.selectedBotolaIndex) {
-        const s = t.querySelector('.tile-status');
-        if (s) s.textContent = i18n.t('tileWaiting') || "IN ATTESA";
-      }
-    });
-
-    this.setTimerToConfrontationMode("⚔️", i18n.t('timerChallenge'));
-
-    this.dom.statusBanner.textContent = i18n.t('bannerConfronting', { targetId: targetOpt.id, text: targetOpt.text, myId: myOpt.id });
-    this.dom.statusBanner.className = "status-banner locked";
-
-    this.studio.setCameraOnSpecificBotola(targetIdx);
-    this.studio.setTensionMode(true);
+  reveal() {
+    this.state = 'REVEAL';
+    this.dom.holdBtn.style.display = 'none';
+    this.dom.leapBtn.style.display = 'none';
+    this.dom.banner.textContent = i18n.t('bannerReveal');
+    this.dom.banner.className = 'status-banner locked';
+    this.showTimerWord('⚖️', i18n.t('timerLast'));
+    this.temple.setTension(true);
     sound.startHeartbeat(130);
 
-    announcer.speak(i18n.t('spkConfronting', { id: targetOpt.id, text: targetOpt.text }), true);
-
-    // Suspense televisiva snella (1800ms)
-    const round = this.roundId;
+    const mine = this.question.options[this.selected];
     this.later(() => {
       sound.stopHeartbeat();
       sound.stopTension();
-
-      if (!targetOpt.isCorrect) {
-        // ESITO: LA BOTOLA SFIDATA È ERRATA (CADE)
-        sound.playBotolaDrop();
-        this.studio.eliminateBotola(targetIdx, () => {
-          if (round !== this.roundId) return;
-          this.activeBotolaIndices.delete(targetIdx);
-          this.eliminatedBotolaIndices.add(targetIdx);
-
-          const targetTile = document.getElementById(`option-tile-${targetIdx}`);
-          if (targetTile) {
-            targetTile.classList.remove('challenging');
-            targetTile.classList.add('eliminated');
-            const s = targetTile.querySelector('.tile-status');
-            if (s) s.textContent = i18n.t('tileEliminated');
-          }
-
-          const remainingOpponents = this.activeBotolaIndices.size - 1;
-
-          if (remainingOpponents <= 0) {
-            this.later(() => {
-              this.handleVictory();
-            }, 1000);
-          } else {
-            announcer.speak(i18n.t('spkConfrontSafe', { id: targetOpt.id }));
-            this.dom.statusBanner.textContent = i18n.t('bannerConfrontSafe', { targetId: targetOpt.id, rem: remainingOpponents });
-
-            this.later(() => {
-              this.startConfrontationChoice();
-            }, 1400);
-          }
-        });
-      } else {
-        // ESITO: LA BOTOLA SFIDATA ERA QUELLA ESATTA! (CADE IL CAMPIONE)
-        const targetTile = document.getElementById(`option-tile-${targetIdx}`);
-        if (targetTile) {
-          targetTile.classList.remove('challenging');
-          targetTile.classList.add('correct-reveal');
-          const s = targetTile.querySelector('.tile-status');
-          if (s) s.textContent = i18n.t('tileCorrectReveal');
-        }
-
-        announcer.speak(i18n.t('spkConfrontWrongChampion', { id: targetOpt.id }), true);
-        sound.playWrong();
-
-        this.later(() => {
-          this.handleDefeat(myOpt, targetOpt);
-        }, 1500);
-      }
-    }, 1800);
+      this.temple.setTension(false);
+      if (mine.isCorrect) this.survive();
+      else this.fall();
+    }, 2200);
   }
 
-  // =========================================================================
-  // VITTORIA
-  // =========================================================================
-  handleVictory() {
-    this.gameState = 'END_GAME';
-    setGameplayActive(false);
-    const myOpt = this.currentQuestion.options[this.selectedBotolaIndex];
+  // ---------- Esiti ----------
+  survive() {
+    this.state = 'SAFE';
+    const otherIdx = this.other;
+    sound.playCrumble();
+    this.temple.crumbleTile(otherIdx, () => this.setTileStatus(otherIdx, 'eliminated', i18n.t('tileCrumbled')));
+    this.crumbled.add(otherIdx);
 
-    this.setTimerToConfrontationMode("🏆", i18n.t('timerWon'));
-    this.recordResult(this.currentPrizeNum);
+    const gain = HALL_TREASURE[this.hall - 1];
+    this.bag += gain;
+    this.updateHud();
+    this.showTimerWord('✔', i18n.t('timerSafe'));
+    this.setTileStatus(this.selected, 'correct-reveal', i18n.t('tileCorrectReveal'));
+    this.dom.banner.textContent = i18n.t('bannerSafe', { coins: this.coins(gain) });
+    this.dom.banner.className = 'status-banner verdict';
     sound.playCorrect();
-    this.studio.celebrateChampion();
+    this.temple.celebrate();
+    announcer.speak(i18n.t('spkSafe', { n: this.hall }));
+    setGameplayActive(false);
 
-    announcer.speak(i18n.t('spkVictory', { prize: this.formatPrize(this.currentPrizeNum) }));
-
+    const mine = this.question.options[this.selected];
     this.later(() => {
-      this.dom.endModal.classList.add('active');
-      this.dom.endTitle.textContent = i18n.t('victoryTitle');
-      this.dom.endTitle.className = "end-title victory";
-      this.dom.endDesc.innerHTML = i18n.t('victoryDesc', {
-        myId: myOpt.id,
-        prize: this.formatPrize(this.currentPrizeNum)
-      });
-      this.dom.endDetail.innerHTML = `
-        <strong>${myOpt.text}</strong><br>
-        <em>${myOpt.detail}</em>
-        ${this.renderStatsLine()}
-      `;
-      this.dom.endBtn.textContent = i18n.t('btnPlayAgain');
+      if (this.hall >= HALLS) {
+        this.bag *= 2;
+        this.updateHud();
+        this.recordExpedition(true);
+        announcer.speak(i18n.t('spkConquered'));
+        this.showEnd('victory', i18n.t('conqueredTitle'), i18n.t('conqueredDesc', { bag: this.coins(this.bag) }), mine,
+          [{ label: i18n.t('btnNewRun'), action: 'new' }]);
+        return;
+      }
+      this.showEnd('victory', i18n.t('safeTitle'),
+        i18n.t('safeDesc', { n: this.hall, coins: this.coins(gain), bag: this.coins(this.bag) }), mine, [
+          { label: i18n.t('btnDescend', { n: this.hall + 1 }), action: 'descend' },
+          { label: i18n.t('btnEscape', { bag: this.coins(this.bag) }), action: 'escape' }
+        ]);
     }, 1800);
   }
 
-  // =========================================================================
-  // SCONFITTA
-  // =========================================================================
-  handleDefeat(myOpt, correctOpt) {
-    this.gameState = 'END_GAME';
+  fall() {
+    this.state = 'FELL';
+    const mine = this.question.options[this.selected];
+    const right = this.question.options[this.other];
+    sound.playWrong();
+    this.showTimerWord('✕', i18n.t('timerFell'));
+    this.setTileStatus(this.other, 'correct-reveal', i18n.t('tileCorrectReveal'));
+    this.temple.setCameraOnExplorer(this.selected);
+    announcer.speak(i18n.t('spkFall', { text: right.text }), true);
     setGameplayActive(false);
-    sound.playBotolaDrop();
+    const lost = this.bag;
+    this.recordExpedition(false);
 
-    this.setTimerToConfrontationMode("✕", i18n.t('timerFell'));
-    this.recordResult(0);
-    this.studio.setCameraChampionOnBotola(this.selectedBotolaIndex);
     const round = this.roundId;
-    this.studio.dropChampion(this.selectedBotolaIndex, () => {
-      if (round !== this.roundId) return;
-      this.later(() => {
-        this.dom.endModal.classList.add('active');
-        this.dom.endTitle.textContent = i18n.t('defeatTitle');
-        this.dom.endTitle.className = "end-title defeat";
-        this.dom.endDesc.innerHTML = i18n.t('defeatDesc', {
-          prize: this.formatPrize(this.currentPrizeNum)
-        });
-        this.dom.endDetail.innerHTML = `
-          <strong>${myOpt.id} - ${myOpt.text}</strong> (✕)<br>
-          <strong>${correctOpt.id} - ${correctOpt.text}</strong> (✔)<br>
-          <em>${correctOpt.detail}</em>
-          ${this.renderStatsLine()}
-        `;
-        this.dom.endBtn.textContent = i18n.t('btnPlayAgain');
-      }, 1200);
-    });
+    this.later(() => {
+      sound.playCrumble();
+      this.temple.dropExplorer(() => {
+        if (round !== this.roundId) return;
+        this.crumbled.add(this.selected);
+        this.later(() => {
+          this.showEnd('defeat', i18n.t('fallTitle'),
+            i18n.t('fallDesc', { num: mine.id, n: this.hall, bag: this.coins(lost) }), right,
+            [{ label: i18n.t('btnNewRun'), action: 'new' }], mine);
+        }, 900);
+      });
+    }, 900);
   }
 
-  // Statistiche salvate sul dispositivo
-  recordResult(prizeWon) {
+  showEnd(kind, title, desc, rightOpt, actions, wrongOpt) {
+    this.endActions = actions;
+    this.dom.endTitle.textContent = title;
+    this.dom.endTitle.className = `end-title ${kind}`;
+    this.dom.endDesc.innerHTML = desc;
+    this.dom.endDetail.innerHTML = `
+      ${wrongOpt ? `<strong>${wrongOpt.id} - ${wrongOpt.text}</strong> (✕)<br>` : ''}
+      <strong>${rightOpt.id} - ${rightOpt.text}</strong> (✔)<br>
+      <em>${rightOpt.detail}</em>
+      ${this.statsLine()}
+    `;
+    this.dom.endBtn.textContent = actions[0].label;
+    this.dom.endBtn2.hidden = !actions[1];
+    if (actions[1]) this.dom.endBtn2.textContent = actions[1].label;
+    this.dom.endModal.classList.add('active');
+  }
+
+  async endChoice(choice) {
+    if (!choice) return;
+    this.dom.endModal.classList.remove('active');
+    if (choice.action === 'escape') {
+      this.recordExpedition(true);
+      announcer.speak(i18n.t('spkEscape', { bag: this.coins(this.bag) }));
+      const hall = this.hall;
+      this.showEnd('victory', i18n.t('escapeTitle'), i18n.t('escapeDesc', { n: hall, bag: this.coins(this.bag) }),
+        this.question.options[this.selected], [{ label: i18n.t('btnNewRun'), action: 'new' }]);
+      return;
+    }
+    // Passaggio tra due sale o tra due spedizioni: qui può comparire un interstitial
+    await trackAdAction();
+    if (choice.action === 'descend') {
+      this.hall++;
+      this.enterHall();
+    } else {
+      this.startExpedition();
+    }
+  }
+
+  recordExpedition(escaped) {
     const s = this.stats;
     s.played++;
-    if (prizeWon > 0) {
-      s.wins++;
-      s.totalWon += prizeWon;
-      s.bestWin = Math.max(s.bestWin, prizeWon);
-      s.streak++;
-      s.bestStreak = Math.max(s.bestStreak, s.streak);
-    } else {
-      s.streak = 0;
+    s.deepest = Math.max(s.deepest, this.hall);
+    if (escaped) {
+      s.escapes++;
+      s.best = Math.max(s.best, this.bag);
     }
     saveJSON(STATS_KEY, s);
   }
 
-  renderStatsLine() {
+  statsLine() {
     const s = this.stats;
-    const pct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
     return `<div class="stats-line">${i18n.t('statsLine', {
-      played: s.played, wins: s.wins, pct, streak: s.streak, best: this.formatPrize(s.bestWin)
+      played: s.played, escapes: s.escapes, deepest: s.deepest, best: this.coins(s.best)
     })}</div>`;
   }
 
-  updateTimerUI(maxSec = 90) {
-    this.dom.timerDisplay.textContent = this.timerSeconds;
-    const totalCircumference = 283;
-    const progress = (this.timerSeconds / maxSec) * totalCircumference;
-    this.dom.timerCircle.style.strokeDashoffset = totalCircumference - progress;
+  // ---------- Timer ----------
+  resetTimerDisplay(secs) {
+    this.timerSeconds = secs;
+    this.timerMax = secs;
+    this.dom.timerDisplay.classList.remove('urgent', 'word-mode');
+    this.dom.timerCircle.classList.remove('urgent', 'word-mode');
+    this.dom.timerSub.textContent = i18n.t('timerSec');
+    this.updateTimerUI();
+  }
 
-    if (this.timerSeconds <= 8) {
-      this.dom.timerDisplay.classList.add('urgent');
-      this.dom.timerCircle.classList.add('urgent');
-    } else {
-      this.dom.timerDisplay.classList.remove('urgent');
-      this.dom.timerCircle.classList.remove('urgent');
-    }
+  startTimer(secs, onEnd) {
+    clearInterval(this.timerInterval);
+    this.resetTimerDisplay(secs);
+    this.timerInterval = setInterval(() => {
+      if (this.timerPaused) return;
+      this.timerSeconds--;
+      this.updateTimerUI();
+      if (this.timerSeconds <= 8) {
+        sound.setHeartbeatBpm(130);
+        sound.playTick(1200);
+        this.temple.setTension(true);
+      } else {
+        sound.playTick(800);
+      }
+      if (this.timerSeconds <= 0) {
+        clearInterval(this.timerInterval);
+        this.temple.setTension(false);
+        onEnd();
+      }
+    }, 1000);
+  }
+
+  updateTimerUI() {
+    this.dom.timerDisplay.textContent = this.timerSeconds;
+    const c = 283;
+    this.dom.timerCircle.style.strokeDashoffset = c - (this.timerSeconds / this.timerMax) * c;
+    const urgent = this.timerSeconds <= 8;
+    this.dom.timerDisplay.classList.toggle('urgent', urgent);
+    this.dom.timerCircle.classList.toggle('urgent', urgent);
+  }
+
+  showTimerWord(icon, sub) {
+    this.dom.timerDisplay.textContent = icon;
+    this.dom.timerSub.textContent = sub;
+    this.dom.timerCircle.style.strokeDashoffset = '0';
+    this.dom.timerDisplay.classList.remove('urgent');
+    this.dom.timerCircle.classList.remove('urgent');
+    this.dom.timerDisplay.classList.add('word-mode');
+    this.dom.timerCircle.classList.add('word-mode');
   }
 }
-
-const HISTORY_KEY = 'trap10.history';
-const STATS_KEY = 'trap10.stats';
 
 function loadJSON(key, fallback) {
   try {
@@ -1064,7 +750,6 @@ function saveJSON(key, value) {
   } catch {}
 }
 
-// Avvio
 window.addEventListener('DOMContentLoaded', () => {
-  window.dieciBotoleGame = new DieciBotoleGame();
+  window.lastTileGame = new LastTileGame();
 });

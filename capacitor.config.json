@@ -1,7 +1,7 @@
 {
   "appId": "com.ikonet.trap10",
-  "appName": "Trap10 Quiz",
+  "appName": "Last Tile",
   "webDir": "dist",
-  "ios": { "contentInset": "never", "backgroundColor": "#040814" },
-  "android": { "backgroundColor": "#040814" }
+  "ios": { "contentInset": "never", "backgroundColor": "#0d0906" },
+  "android": { "backgroundColor": "#0d0906" }
 }

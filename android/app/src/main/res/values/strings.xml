@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Trap10 Quiz</string>
-    <string name="title_activity_main">Trap10 Quiz</string>
+    <string name="app_name">Last Tile</string>
+    <string name="title_activity_main">Last Tile</string>
     <string name="package_name">com.ikonet.trap10</string>
     <string name="custom_url_scheme">com.ikonet.trap10</string>
 </resources>

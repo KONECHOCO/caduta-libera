@@ -1,23 +1,23 @@
 /* ==========================================================================
-   TRAP10 QUIZ
-   Stile Broadcast Televisivo Premium
+   LAST TILE: TRIVIA TEMPLE
+   Pietra, ambra e oro
    ========================================================================== */
 
 :root {
-  --bg-dark: #040814;
-  --panel-bg: rgba(7, 18, 42, 0.88);
-  --panel-border: rgba(0, 210, 255, 0.35);
-  --neon-cyan: #00d2ff;
-  --neon-blue: #0066ff;
-  --neon-gold: #ffd700;
-  --gold-glow: rgba(255, 215, 0, 0.45);
-  --danger-red: #ff2a44;
-  --danger-glow: rgba(255, 42, 68, 0.6);
-  --text-white: #ffffff;
-  --text-dim: #9cb1d4;
+  --bg-dark: #0d0906;
+  --panel-bg: rgba(30, 22, 14, 0.9);
+  --panel-border: rgba(217, 164, 65, 0.4);
+  --neon-cyan: #e0a84a;
+  --neon-blue: #a8622a;
+  --neon-gold: #ffcf5a;
+  --gold-glow: rgba(255, 207, 90, 0.45);
+  --danger-red: #e0503c;
+  --danger-glow: rgba(224, 80, 60, 0.6);
+  --text-white: #fbf3e2;
+  --text-dim: #c2ae8e;
   --font-main: 'Montserrat', sans-serif;
-  --font-display: 'Orbitron', monospace, sans-serif;
-  --font-tech: 'Rajdhani', sans-serif;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-tech: 'Montserrat', sans-serif;
 }
 
 * {
@@ -38,7 +38,7 @@ body, html {
 }
 
 /* --------------------------------------------------------------------------
-   VIEWPORT 3D DELLO STUDIO TELEVISIVO
+   SCENA 3D DEL TEMPIO
    -------------------------------------------------------------------------- */
 #viewport-3d {
   position: absolute;
@@ -50,7 +50,7 @@ body, html {
 }
 
 /* --------------------------------------------------------------------------
-   TOP HUD TELEVISIVO
+   BARRA SUPERIORE
    -------------------------------------------------------------------------- */
 #top-bar {
   position: absolute;
@@ -63,9 +63,9 @@ body, html {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: linear-gradient(180deg, rgba(4, 9, 23, 0.96) 0%, rgba(4, 9, 23, 0.75) 75%, transparent 100%);
+  background: linear-gradient(180deg, rgba(42, 30, 18, 0.96) 0%, rgba(42, 30, 18, 0.75) 75%, transparent 100%);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 210, 255, 0.25);
+  border-bottom: 1px solid rgba(224, 168, 74, 0.25);
 }
 
 .brand-container {
@@ -111,7 +111,7 @@ body, html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(8, 22, 54, 0.85);
+  background: rgba(58, 41, 25, 0.85);
   border: 2px solid var(--neon-gold);
   border-radius: 12px;
   padding: 5px 30px;
@@ -142,9 +142,9 @@ body, html {
 }
 
 .ctrl-btn {
-  background: rgba(14, 30, 68, 0.85);
-  border: 1px solid rgba(0, 210, 255, 0.4);
-  color: #e2eeff;
+  background: rgba(67, 48, 28, 0.85);
+  border: 1px solid rgba(224, 168, 74, 0.4);
+  color: #f4e6c8;
   border-radius: 6px;
   padding: 7px 14px;
   font-size: 0.8rem;
@@ -173,7 +173,7 @@ body, html {
 .lang-select {
   appearance: none;
   -webkit-appearance: none;
-  background: rgba(14, 30, 68, 0.95) url("data:image/svg+xml;utf8,<svg fill='%2300d2ff' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 8px center;
+  background: rgba(67, 48, 28, 0.95) url("data:image/svg+xml;utf8,<svg fill='%2300d2ff' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 8px center;
   padding-right: 26px;
   cursor: pointer;
   outline: none;
@@ -182,7 +182,7 @@ body, html {
 }
 
 .lang-select option {
-  background: #071536;
+  background: #2a1f14;
   color: #ffffff;
 }
 
@@ -204,7 +204,7 @@ body, html {
   pointer-events: none; /* Lascia passare click sul 3D tranne su elementi interattivi */
 }
 
-/* BANNER DI STATO TELEVISIVO */
+/* BANNER DI STATO */
 .status-banner {
   pointer-events: all;
   font-family: var(--font-tech);
@@ -221,15 +221,15 @@ body, html {
 }
 
 .status-banner.intro {
-  background: linear-gradient(90deg, #092154, #0051ff);
+  background: linear-gradient(90deg, #3a2a18, #a8622a);
   border: 1.5px solid var(--neon-cyan);
   color: #ffffff;
 }
 
 .status-banner.thinking {
-  background: linear-gradient(90deg, #b8860b, #ffd700);
+  background: linear-gradient(90deg, #b8860b, #ffcf5a);
   border: 1.5px solid #ffffff;
-  color: #040919;
+  color: #1e140b;
   font-weight: 900;
   animation: pulseGold 1.5s infinite;
 }
@@ -242,7 +242,7 @@ body, html {
 }
 
 .status-banner.verdict {
-  background: linear-gradient(90deg, #7b0099, #d000ff);
+  background: linear-gradient(90deg, #a3420f, #ff8a3d);
   border: 1.5px solid #ffffff;
   color: #ffffff;
   font-size: 1.05rem;
@@ -263,10 +263,10 @@ body, html {
   pointer-events: all;
   width: 95%;
   max-width: 960px;
-  background: linear-gradient(180deg, rgba(8, 22, 54, 0.94) 0%, rgba(4, 12, 32, 0.96) 100%);
+  background: linear-gradient(180deg, rgba(58, 41, 25, 0.94) 0%, rgba(46, 33, 20, 0.96) 100%);
   border: 2px solid var(--neon-cyan);
   border-radius: 16px;
-  box-shadow: 0 0 35px rgba(0, 210, 255, 0.25), inset 0 0 25px rgba(0, 210, 255, 0.08);
+  box-shadow: 0 0 35px rgba(224, 168, 74, 0.25), inset 0 0 25px rgba(224, 168, 74, 0.08);
   padding: 14px 24px;
   text-align: center;
   backdrop-filter: blur(10px);
@@ -287,7 +287,7 @@ body, html {
   letter-spacing: 2px;
   padding: 4px 16px;
   border-radius: 16px;
-  background: rgba(0, 210, 255, 0.2);
+  background: rgba(224, 168, 74, 0.2);
   border: 1px solid var(--neon-cyan);
   color: var(--neon-cyan);
 }
@@ -336,7 +336,7 @@ body, html {
 }
 
 .timer-circle-bg {
-  fill: rgba(6, 15, 38, 0.85);
+  fill: rgba(49, 35, 21, 0.85);
   stroke: rgba(255, 255, 255, 0.1);
   stroke-width: 8;
 }
@@ -357,10 +357,10 @@ body, html {
   filter: drop-shadow(0 0 12px var(--danger-red));
 }
 
-.timer-circle-fg.confront-mode {
+.timer-circle-fg.word-mode {
   stroke: var(--neon-cyan);
   filter: drop-shadow(0 0 14px var(--neon-cyan));
-  animation: pulseConfrontCircle 2s infinite ease-in-out;
+  animation: pulseWordCircle 2s infinite ease-in-out;
 }
 
 .timer-label-box {
@@ -384,20 +384,20 @@ body, html {
   animation: timerPanic 0.5s infinite alternate;
 }
 
-.timer-number.confront-mode {
-  color: #00d2ff;
+.timer-number.word-mode {
+  color: #e0a84a;
   font-size: 2.0rem;
   letter-spacing: 2px;
-  text-shadow: 0 0 16px rgba(0, 210, 255, 0.8);
-  animation: pulseConfrontText 2s infinite ease-in-out;
+  text-shadow: 0 0 16px rgba(224, 168, 74, 0.8);
+  animation: pulseWordText 2s infinite ease-in-out;
 }
 
-@keyframes pulseConfrontCircle {
-  0%, 100% { stroke: #00d2ff; filter: drop-shadow(0 0 10px #00d2ff); }
-  50% { stroke: #ffd700; filter: drop-shadow(0 0 18px #ffd700); }
+@keyframes pulseWordCircle {
+  0%, 100% { stroke: #e0a84a; filter: drop-shadow(0 0 10px #e0a84a); }
+  50% { stroke: #ffcf5a; filter: drop-shadow(0 0 18px #ffcf5a); }
 }
 
-@keyframes pulseConfrontText {
+@keyframes pulseWordText {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
 }
@@ -454,12 +454,12 @@ body, html {
 }
 
 .tv-action-btn.keep {
-  background: linear-gradient(135deg, #008744 0%, #004d26 100%);
-  border: 2px solid #00ff88;
-  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.35);
+  background: linear-gradient(135deg, #5d7a2e 0%, #2f4416 100%);
+  border: 2px solid #9fe38a;
+  box-shadow: 0 4px 20px rgba(159, 227, 138, 0.35);
 }
 .tv-action-btn.keep:hover:not(:disabled) {
-  box-shadow: 0 6px 28px rgba(0, 255, 136, 0.65);
+  box-shadow: 0 6px 28px rgba(159, 227, 138, 0.65);
 }
 
 .tv-action-btn.change {
@@ -493,19 +493,19 @@ body, html {
 .btn-sub {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #f2f6ff;
+  color: #fbf3e2;
   letter-spacing: 1px;
 }
 
 /* --------------------------------------------------------------------------
-   TABELLONE DELLE 10 BOTOLE / OPZIONI (2 RIGHE DA 5)
+   LE 10 RISPOSTE (2 RIGHE DA 5)
    -------------------------------------------------------------------------- */
 .options-board-container {
   pointer-events: all;
   width: 95%;
   max-width: 1050px;
-  background: rgba(6, 16, 42, 0.9);
-  border: 1px solid rgba(0, 210, 255, 0.3);
+  background: rgba(51, 36, 22, 0.9);
+  border: 1px solid rgba(224, 168, 74, 0.3);
   border-radius: 16px;
   padding: 12px 16px;
   backdrop-filter: blur(10px);
@@ -530,8 +530,8 @@ body, html {
 
 .option-tile {
   position: relative;
-  background: linear-gradient(180deg, #0e224e 0%, #071330 100%);
-  border: 1.5px solid rgba(0, 210, 255, 0.35);
+  background: linear-gradient(180deg, #4a3826 0%, #2a1f14 100%);
+  border: 1.5px solid rgba(224, 168, 74, 0.35);
   border-radius: 10px;
   padding: 10px 8px;
   display: flex;
@@ -547,7 +547,7 @@ body, html {
 .option-tile:hover:not(.eliminated) {
   transform: translateY(-4px) scale(1.03);
   border-color: var(--neon-cyan);
-  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(224, 168, 74, 0.4);
   background: #14326e;
 }
 
@@ -582,7 +582,7 @@ body, html {
   color: var(--text-dim);
 }
 
-/* OPZIONE SELEZIONATA DAL CAMPIONE */
+/* LASTRA SU CUI STA L'ESPLORATORE */
 .option-tile.selected {
   border-color: var(--neon-gold);
   background: linear-gradient(180deg, #422d05 0%, #1a1200 100%);
@@ -592,7 +592,7 @@ body, html {
 
 .option-tile.selected .tile-number {
   background: var(--neon-gold);
-  color: #040919;
+  color: #1e140b;
   border-color: #ffffff;
 }
 
@@ -600,7 +600,7 @@ body, html {
   color: var(--neon-gold);
 }
 
-/* OPZIONE ELIMINATA (BOTOLA APERTA NEL VUOTO) */
+/* LASTRA CROLLATA */
 .option-tile.eliminated {
   opacity: 0.3;
   filter: grayscale(1);
@@ -613,49 +613,49 @@ body, html {
   color: var(--danger-red);
 }
 
-/* OPZIONE DISPONIBILE PER IL CONFRONTO */
-.option-tile.confrontable {
+/* L'ALTRA LASTRA RIMASTA */
+.option-tile.other-tile {
   border-color: #ff9900;
   cursor: pointer;
-  animation: pulseConfront 1.5s infinite;
+  animation: pulseOther 1.5s infinite;
 }
 
-.option-tile.confrontable:hover {
+.option-tile.other-tile:hover {
   transform: translateY(-5px) scale(1.05);
   background: linear-gradient(180deg, #3d2300 0%, #1a0f00 100%);
-  border-color: #ffd700;
+  border-color: #ffcf5a;
   box-shadow: 0 0 25px rgba(255, 170, 0, 0.7);
 }
 
-.option-tile.confrontable .tile-status {
+.option-tile.other-tile .tile-status {
   color: #ffaa00;
   font-weight: 900;
 }
 
-@keyframes pulseConfront {
+@keyframes pulseOther {
   0%, 100% { box-shadow: 0 0 10px rgba(255, 153, 0, 0.3); }
   50% { box-shadow: 0 0 22px rgba(255, 153, 0, 0.75); }
 }
 
-/* BOTOLA SOTTO CONFRONTO ATTIVO */
+/* LASTRA RIMASTA IN GIOCO */
 .option-tile.challenging {
   border-color: #ffffff;
-  background: linear-gradient(180deg, #0055ff 0%, #002680 100%);
-  box-shadow: 0 0 30px #00d2ff;
+  background: linear-gradient(180deg, #a8622a 0%, #5a3312 100%);
+  box-shadow: 0 0 30px #e0a84a;
   transform: scale(1.06);
 }
 
-/* RIVELAZIONE BOTOLA ESATTA */
+/* LASTRA CHE REGGE */
 .option-tile.correct-reveal {
-  border-color: #00ff88 !important;
-  background: linear-gradient(180deg, #004d26 0%, #002b15 100%) !important;
-  box-shadow: 0 0 30px #00ff88 !important;
+  border-color: #9fe38a !important;
+  background: linear-gradient(180deg, #4c6b22 0%, #26380f 100%) !important;
+  box-shadow: 0 0 30px #9fe38a !important;
   opacity: 1 !important;
   filter: none !important;
 }
 
 .option-tile.correct-reveal .tile-status {
-  color: #00ff88 !important;
+  color: #9fe38a !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -685,16 +685,16 @@ body, html {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: rgba(3, 7, 18, 0.82);
+  background: rgba(39, 28, 17, 0.82);
   backdrop-filter: blur(8px);
 }
 
 .modal-dialog {
   position: relative;
   z-index: 2;
-  background: linear-gradient(135deg, rgba(8, 20, 48, 0.96) 0%, rgba(5, 12, 30, 0.98) 100%);
+  background: linear-gradient(135deg, rgba(55, 39, 24, 0.96) 0%, rgba(45, 32, 20, 0.98) 100%);
   border: 2px solid var(--neon-cyan);
-  box-shadow: 0 0 40px rgba(0, 210, 255, 0.3);
+  box-shadow: 0 0 40px rgba(224, 168, 74, 0.3);
   border-radius: 20px;
   padding: 30px;
   text-align: center;
@@ -734,13 +734,13 @@ body, html {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: rgba(11, 26, 61, 0.7);
-  border: 1px solid rgba(0, 210, 255, 0.25);
+  background: rgba(62, 44, 27, 0.7);
+  border: 1px solid rgba(224, 168, 74, 0.25);
   border-radius: 10px;
   padding: 12px 16px;
   font-size: 0.92rem;
   line-height: 1.4;
-  color: #e2edff;
+  color: #f4e6c8;
 }
 
 .rule-badge {
@@ -749,7 +749,7 @@ body, html {
   height: 28px;
   border-radius: 50%;
   background: var(--neon-cyan);
-  color: #040919;
+  color: #1e140b;
   font-family: var(--font-display);
   font-weight: 900;
   display: flex;
@@ -785,13 +785,13 @@ body, html {
 .end-desc {
   font-size: 1.15rem;
   line-height: 1.6;
-  color: #e2edff;
+  color: #f4e6c8;
   margin-bottom: 18px;
 }
 
 .end-detail-box {
-  background: rgba(11, 26, 61, 0.85);
-  border: 1px solid rgba(0, 210, 255, 0.3);
+  background: rgba(62, 44, 27, 0.85);
+  border: 1px solid rgba(224, 168, 74, 0.3);
   border-radius: 12px;
   padding: 14px 18px;
   margin-bottom: 24px;
@@ -804,7 +804,7 @@ body, html {
 .stats-line {
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid rgba(0, 210, 255, 0.25);
+  border-top: 1px solid rgba(224, 168, 74, 0.25);
   font-family: var(--font-tech);
   font-size: 0.85rem;
   letter-spacing: 1px;
@@ -822,7 +822,7 @@ body, html {
 }
 
 .tv-primary-btn {
-  background: linear-gradient(90deg, #0051ff, #00d2ff);
+  background: linear-gradient(90deg, #a8622a, #e0a84a);
   border: 2px solid #ffffff;
   border-radius: 30px;
   padding: 14px 40px;
@@ -832,22 +832,22 @@ body, html {
   font-weight: 800;
   letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
+  box-shadow: 0 0 25px rgba(224, 168, 74, 0.6);
   transition: all 0.25s ease;
 }
 
 .tv-primary-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 35px rgba(0, 210, 255, 0.9);
+  box-shadow: 0 0 35px rgba(224, 168, 74, 0.9);
 }
 
 /* --------------------------------------------------------------------------
-   JOLLY, PRO, BANNER E DIAGNOSTICA ANNUNCI
+   TORCIA, PRO, BANNER E DIAGNOSTICA ANNUNCI
    -------------------------------------------------------------------------- */
-.tv-action-btn.jolly {
-  background: linear-gradient(135deg, #5b2bd6 0%, #2a0f75 100%);
-  border: 2px solid #b48cff;
-  box-shadow: 0 4px 20px rgba(160, 110, 255, 0.4);
+.tv-action-btn.torch {
+  background: linear-gradient(135deg, #c8501a 0%, #6e2208 100%);
+  border: 2px solid #ffb36b;
+  box-shadow: 0 4px 20px rgba(255, 138, 61, 0.4);
 }
 
 .pro-btn {
@@ -856,8 +856,8 @@ body, html {
 }
 
 .pro-btn.owned {
-  background: linear-gradient(135deg, #b8860b, #ffd700);
-  color: #040919;
+  background: linear-gradient(135deg, #b8860b, #ffcf5a);
+  color: #1e140b;
 }
 
 .pro-dialog {
@@ -896,7 +896,7 @@ body, html {
 }
 
 .pro-benefits li {
-  background: rgba(11, 26, 61, 0.8);
+  background: rgba(62, 44, 27, 0.8);
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 10px;
   padding: 9px 12px;
@@ -905,7 +905,7 @@ body, html {
 
 .pro-status {
   font-weight: 800;
-  color: #00ff88;
+  color: #9fe38a;
   margin-bottom: 10px;
 }
 
@@ -913,8 +913,8 @@ body, html {
 
 .pro-buy-btn {
   width: 100%;
-  background: linear-gradient(90deg, #e69d00, #ffd700);
-  color: #040919;
+  background: linear-gradient(90deg, #e69d00, #ffcf5a);
+  color: #1e140b;
   box-shadow: 0 0 25px var(--gold-glow);
 }
 
@@ -932,7 +932,7 @@ body, html {
 .pro-message {
   margin-top: 10px;
   font-size: 0.85rem;
-  color: #e2edff;
+  color: #f4e6c8;
 }
 
 .web-ad-bar {
@@ -944,20 +944,20 @@ body, html {
   display: flex;
   justify-content: flex-end;
   padding: 6px 12px max(6px, env(safe-area-inset-bottom));
-  background: rgba(3, 7, 18, 0.95);
+  background: rgba(39, 28, 17, 0.95);
   border-top: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .web-ad-bar[hidden], .ad-diag[hidden] { display: none; }
 
 .web-ad-pro-btn {
-  background: linear-gradient(90deg, #e69d00, #ffd700);
+  background: linear-gradient(90deg, #e69d00, #ffcf5a);
   border: none;
   border-radius: 8px;
   padding: 5px 12px;
   font-family: var(--font-tech);
   font-weight: 800;
-  color: #040919;
+  color: #1e140b;
   cursor: pointer;
 }
 
@@ -1040,12 +1040,12 @@ body, html {
   .lang-select { padding: 7px 18px 7px 6px; font-size: 0.8rem; background-position: right 2px center; }
   .logo-shield { font-size: 1.05rem; gap: 5px; letter-spacing: 1px; }
   .mode-tag { font-size: 0.6rem; letter-spacing: 1px; }
-  .montepremi-display { padding: 3px 12px; border-radius: 10px; }
+  .montepremi-display { padding: 3px 12px; border-radius: 10px; flex-direction: row; align-items: baseline; gap: 10px; }
   .hud-label { font-size: 0.58rem; letter-spacing: 1px; }
   .digital-currency { font-size: 1.15rem; }
 
   #main-finale-ui {
-    top: calc(max(8px, env(safe-area-inset-top)) + 104px);
+    top: calc(max(8px, env(safe-area-inset-top)) + 116px);
     padding: 6px 8px 8px;
     justify-content: flex-start;
     gap: 6px;
@@ -1066,7 +1066,7 @@ body, html {
   .hint-pill { font-size: 0.66rem; padding: 2px 10px; }
   .question-text { font-size: 0.95rem; line-height: 1.3; }
 
-  /* La zona centrale lascia vedere lo studio 3D */
+  /* La zona centrale lascia vedere il tempio 3D */
   .timer-action-strip {
     flex: 1;
     min-height: 120px;
@@ -1078,7 +1078,7 @@ body, html {
   }
   .timer-wrapper { width: 64px; height: 64px; flex-shrink: 0; }
   .timer-number { font-size: 1.35rem; }
-  .timer-number.confront-mode { font-size: 1.3rem; }
+  .timer-number.word-mode { font-size: 1.3rem; }
   .timer-sub { font-size: 0.55rem; }
   .action-buttons-group { flex: 1; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
   .tv-action-btn { padding: 7px 10px; gap: 6px; border-radius: 10px; flex: 1 1 140px; max-width: 260px; }
@@ -1102,7 +1102,7 @@ body, html {
   .option-tile:hover:not(.eliminated),
   .option-tile.selected,
   .option-tile.challenging,
-  .option-tile.confrontable:hover { transform: none; }
+  .option-tile.other-tile:hover { transform: none; }
   .tile-number { width: 22px; height: 22px; font-size: 0.7rem; flex-shrink: 0; }
   .tile-text { font-size: 0.72rem; margin: 0; line-height: 1.2; }
   .tile-status { display: none; }
@@ -1174,4 +1174,27 @@ body, html {
   .end-desc { font-size: 1.35rem; }
   .end-detail-box { font-size: 1.15rem; }
   .tv-primary-btn { font-size: 1.25rem; padding: 18px 48px; }
+}
+
+/* --------------------------------------------------------------------------
+   TESORO NELLA BARRA, SECONDA SCELTA DEL MODALE (ESCI COL TESORO)
+   -------------------------------------------------------------------------- */
+.hud-treasure {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tv-primary-btn.secondary {
+  margin-top: 10px;
+  background: transparent;
+  color: var(--neon-gold);
+  border: 2px solid var(--neon-gold);
+  box-shadow: none;
+}
+
+.end-title,
+.modal-title,
+.logo-text-top {
+  letter-spacing: 0.04em;
 }

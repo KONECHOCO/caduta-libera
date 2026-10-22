@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Trap10 Quiz</string>
+        <string>Last Tile</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -68,7 +68,7 @@
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-1151868778464777~4888282944</string>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Your data will be used to show you more relevant ads and keep Trap10 Quiz free.</string>
+	<string>Your data will be used to show you more relevant ads and keep Last Tile free.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>it</string>

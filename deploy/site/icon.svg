@@ -1,44 +1,74 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
     <radialGradient id="bg" cx="50%" cy="42%" r="70%">
-      <stop offset="0" stop-color="#0d2a66"/>
-      <stop offset="0.55" stop-color="#071538"/>
-      <stop offset="1" stop-color="#020611"/>
+      <stop offset="0" stop-color="#5a3a1c"/>
+      <stop offset="0.55" stop-color="#2a1a0d"/>
+      <stop offset="1" stop-color="#0d0906"/>
     </radialGradient>
-    <radialGradient id="spot" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#ffe9a0" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff6c2"/>
-      <stop offset="0.45" stop-color="#ffd700"/>
-      <stop offset="1" stop-color="#c98a00"/>
+    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f7858"/>
+      <stop offset="1" stop-color="#5e4c36"/>
     </linearGradient>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="14" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0b0"/>
+      <stop offset="0.5" stop-color="#ffcf5a"/>
+      <stop offset="1" stop-color="#c8862a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffcf5a" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffcf5a" stop-opacity="0"/>
+    </radialGradient>
   </defs>
+
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <circle cx="512" cy="540" r="330" fill="url(#spot)"/>
-  <!-- Anello dello studio -->
-  <circle cx="512" cy="540" r="352" fill="none" stroke="#00d2ff" stroke-width="10" opacity="0.55" filter="url(#glow)"/>
-  <!-- 10 botole in cerchio: 9 azzurre, 1 rossa aperta -->
-  <g transform="translate(512 540)">
-    <g fill="#0a1f4d" stroke="#00d2ff" stroke-width="9">
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(0)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(36)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(72)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(108)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(144)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(216)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(252)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(288)"/>
-      <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(324)"/>
-    </g>
-    <rect x="-46" y="-352" width="92" height="64" rx="12" transform="rotate(180)" fill="#2a0008" stroke="#ff2a44" stroke-width="9" filter="url(#glow)"/>
+
+  <!-- Colonne del tempio -->
+  <g fill="#3b2a18">
+    <rect x="70" y="120" width="96" height="860" rx="10"/>
+    <rect x="858" y="120" width="96" height="860" rx="10"/>
+    <rect x="40" y="96" width="944" height="70" rx="12"/>
   </g>
-  <!-- Logo -->
-  <text x="512" y="420" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="120" letter-spacing="14" fill="#ffffff">TRAP</text>
-  <text x="512" y="700" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="300" fill="url(#gold)" filter="url(#glow)">10</text>
+  <g fill="#4d3820">
+    <rect x="52" y="166" width="132" height="34"/>
+    <rect x="840" y="166" width="132" height="34"/>
+  </g>
+
+  <!-- Griglia 3x3 di lastre in prospettiva: 8 crepate e scure, quella centrale regge -->
+  <g transform="translate(512 640)">
+    <g id="tiles">
+      <!-- fila posteriore -->
+      <polygon points="-300,-190 -110,-190 -122,-110 -330,-110" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <polygon points="-95,-190 95,-190 100,-110 -100,-110" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <polygon points="110,-190 300,-190 330,-110 122,-110" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <!-- fila centrale -->
+      <polygon points="-335,-95 -125,-95 -138,10 -372,10" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <polygon points="110,-95 335,-95 372,10 138,10" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <!-- fila anteriore -->
+      <polygon points="-378,28 -140,28 -156,160 -424,160" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <polygon points="-120,28 120,28 128,160 -128,160" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+      <polygon points="140,28 378,28 424,160 156,160" fill="#3a2d1f" stroke="#1d150c" stroke-width="8"/>
+    </g>
+    <!-- crepe -->
+    <g stroke="#140e08" stroke-width="7" fill="none" stroke-linecap="round">
+      <path d="M-260,-185 l30,40 l-25,30"/>
+      <path d="M40,-185 l-20,35 l30,40"/>
+      <path d="M220,-185 l-10,45 l40,25"/>
+      <path d="M-300,-90 l40,50 l-30,45"/>
+      <path d="M250,-90 l-30,55 l45,40"/>
+      <path d="M-330,35 l50,60 l-40,60"/>
+      <path d="M-20,35 l30,70 l-35,50"/>
+      <path d="M300,35 l-40,55 l50,65"/>
+    </g>
+    <!-- lastra che regge -->
+    <ellipse cx="0" cy="-42" rx="210" ry="120" fill="url(#glow)"/>
+    <polygon points="-112,-95 112,-95 124,10 -124,10" fill="url(#stone)" stroke="url(#gold)" stroke-width="14" stroke-linejoin="round"/>
+    <polygon points="-82,-74 82,-74 90,-12 -90,-12" fill="none" stroke="#ffcf5a" stroke-width="5" opacity="0.8"/>
+  </g>
+
+  <!-- Gemma d'oro sopra la lastra -->
+  <g transform="translate(512 300) scale(0.85)">
+    <polygon points="0,-118 82,0 0,118 -82,0" fill="url(#gold)" stroke="#fff3c4" stroke-width="8"/>
+    <polygon points="0,-118 82,0 0,0" fill="#fff3c4" opacity="0.35"/>
+    <polygon points="0,0 -82,0 0,118" fill="#7a4a12" opacity="0.35"/>
+  </g>
 </svg>

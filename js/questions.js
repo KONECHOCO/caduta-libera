@@ -1,6 +1,6 @@
-// Generatore di domande per TRAP10 QUIZ
+// Generatore degli enigmi di Last Tile
 // Ogni domanda viene costruita al momento da archivi di dati verificati (IT, EN, ES, FR, DE):
-// si estraggono 10 voci a caso, se ne ricava l'unica risposta esatta e l'ordine delle botole è sempre mescolato.
+// si estraggono 10 voci a caso, se ne ricava l'unica risposta esatta e l'ordine delle lastre è sempre mescolato.
 
 export const LANGS = ['it', 'en', 'es', 'fr', 'de'];
 
@@ -577,7 +577,7 @@ const PRIZES = [100000, 150000, 200000, 250000, 300000, 500000];
  * Crea una nuova domanda nella lingua indicata.
  * @param {string} lang
  * @param {{recentSigs?: string[], recentCats?: string[], rng?: () => number}} opts
- *   recentSigs: domande già viste (non vengono ripetute), recentCats: categorie delle ultime manche (vengono evitate)
+ *   recentSigs: domande già viste (non vengono ripetute), recentCats: categorie delle ultime sale (vengono evitate)
  */
 export function generateQuestion(lang, { recentSigs = [], recentCats = [], rng = Math.random } = {}) {
   if (!LANGS.includes(lang)) lang = 'it';

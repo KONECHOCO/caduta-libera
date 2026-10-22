@@ -1,13 +1,13 @@
 /**
- * Monetizzazione: AdMob (video all'apertura, banner, interstitial tra le manche, video premio "Jolly") + Trap10 Pro.
+ * Monetizzazione: AdMob (video all'apertura, banner, interstitial tra le sale, video premio "torcia extra") + Last Tile Pro.
  *
- * - Trap10 Pro = acquisto una tantum (non consumabile, 2,99 €) che rimuove TUTTA la pubblicità
- *   e rende il Jolly di Leo gratuito in ogni manche. Prodotto da creare su App Store Connect e Play Console
- *   con ID PRO_PRODUCT_ID.
+ * - Last Tile Pro = acquisto una tantum (non consumabile, 2,99 €) che rimuove TUTTA la pubblicità
+ *   e dà una torcia in più in ogni sala. Prodotto su App Store Connect e Play Console con ID PRO_PRODUCT_ID
+ *   (l'ID "trap10_pro" resta quello già registrato negli store).
  * - Gli ID AdMob reali arrivano dalle variabili VITE_ADMOB_* (Codemagic / .env.production). Senza di esse si usano
  *   gli ID di test ufficiali Google: non pubblicare mai l'app con gli annunci di test.
  * - Nel browser non ci sono annunci: resta solo la barra di anteprima con il pulsante Pro.
- * - Gli annunci a schermo intero non partono mai a manche in corso (timer attivi): vedi setGameplayActive().
+ * - Gli annunci a schermo intero non partono mai a sala in corso (timer attivi): vedi setGameplayActive().
  */
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -22,7 +22,7 @@ import {
 } from '@capacitor-community/admob';
 import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
 
-export const PRO_PRODUCT_ID = 'trap10_pro';
+export const PRO_PRODUCT_ID = 'lasttile.pro';
 
 const native = Capacitor.isNativePlatform();
 const platform = Capacitor.getPlatform();
@@ -58,7 +58,7 @@ const MIN_GAP_BETWEEN_FULLSCREEN_MS = 45 * 1000;
 const APP_OPEN_MIN_BACKGROUND_MS = 20 * 1000;
 const APP_OPEN_LOAD_TIMEOUT_MS = 8000;
 
-const PRO_KEY = 'trap10.pro';
+const PRO_KEY = 'lasttile.pro';
 
 function readStorage(key, fallback) {
   try {
@@ -77,7 +77,7 @@ function writeStorage(key, value) {
 
 // In sviluppo sempre annunci di test: cliccare i propri annunci reali viola le norme AdMob.
 // Nelle build di prova (TestFlight / test interno) si attivano toccando 7 volte il logo: vedi toggleTestAds().
-const TEST_ADS_KEY = 'trap10.testAds';
+const TEST_ADS_KEY = 'lasttile.testAds';
 const USE_TEST_ADS = env.DEV || !REAL_IDS.banner || readStorage(TEST_ADS_KEY, false);
 const AD_IDS = USE_TEST_ADS ? TEST_IDS[platform] || TEST_IDS.android : REAL_IDS;
 
@@ -120,7 +120,7 @@ let fullscreenShowing = false;
 let rewardEarned = false;
 let gameplayActive = false;
 
-/** Il gioco segnala quando una manche è in corso: niente annunci a schermo intero durante i timer. */
+/** Il gioco segnala quando una sala è in corso: niente annunci a schermo intero durante i timer. */
 export function setGameplayActive(active) {
   gameplayActive = active;
 }
@@ -326,7 +326,7 @@ export async function initMonetization() {
     await showInterstitialNow();
   }
 
-  // Video anche quando l'utente torna nell'app dopo averla lasciata in background (mai a manche in corso)
+  // Video anche quando l'utente torna nell'app dopo averla lasciata in background (mai a sala in corso)
   CapApp.addListener('appStateChange', ({ isActive }) => {
     if (!isActive) {
       backgroundedAt = Date.now();
@@ -354,7 +354,7 @@ async function showInterstitialNow() {
 }
 
 /**
- * Da chiamare nei "punti di passaggio" naturali (nuova manche, apertura regole).
+ * Da chiamare nei "punti di passaggio" naturali (nuova sala, apertura regole).
  * Mostra un interstitial video ogni N azioni, con distanza minima. Si risolve a annuncio chiuso.
  */
 export async function trackAdAction() {
@@ -369,15 +369,15 @@ export async function trackAdAction() {
   await showInterstitialNow();
 }
 
-// ---------- Video premio: Jolly di Leo ----------
-/** Il Jolly è disponibile gratis con Pro e nel browser; nell'app gratuita serve un video premio pronto. */
-export function jollyAvailable() {
+// ---------- Video premio: torcia extra ----------
+/** La torcia extra è gratis nel browser e con Pro; nell'app gratuita serve un video premio pronto. */
+export function rewardAvailable() {
   if (state.isPro || !native) return true;
   return adsAllowed() && state.rewardedReady;
 }
 
 /** Mostra un video premio; restituisce true solo se AdMob conferma che è stato guardato fino alla fine. */
-export async function earnJolly() {
+export async function earnReward() {
   if (state.isPro || !native) return true;
   if (!adsAllowed()) return false;
   try {
@@ -395,7 +395,7 @@ export async function earnJolly() {
   }
 }
 
-// ---------- Trap10 Pro (acquisto una tantum) ----------
+// ---------- Last Tile Pro (acquisto una tantum) ----------
 function setPro(isPro) {
   writeStorage(PRO_KEY, isPro);
   setState({ isPro });
