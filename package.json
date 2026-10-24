@@ -10,7 +10,8 @@
     "check:questions": "node scripts/check-questions.mjs",
     "check:listing": "node scripts/check-listing.mjs",
     "build:crazygames": "vite build --mode crazygames",
-    "build:itch": "vite build --mode itch"
+    "build:itch": "vite build --mode itch",
+    "build:msstore": "vite build --mode msstore"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.2.1",
