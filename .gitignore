@@ -14,3 +14,8 @@ npm-debug.log*
 dist/
 build/
 .tempmediaStorage/
+
+# build per i portali web
+dist-crazygames/
+dist-itch/
+portal-release/

@@ -107,11 +107,13 @@ export class LastTileGame {
 
   // ---------- Monetizzazione ----------
   onMonetizationChange(st) {
-    const showWebBar = !st.native && !st.isPro;
+    // Sui portali web (CrazyGames, itch.io) niente barra Pro e niente acquisto
+    const showWebBar = !st.native && !st.isPro && !st.portal;
     this.dom.webAdBar.hidden = !showWebBar;
     const adH = st.isPro ? 0 : st.native ? st.bannerHeight : this.dom.webAdBar.offsetHeight;
     document.documentElement.style.setProperty('--ad-h', `${adH}px`);
     this.dom.proBtn.classList.toggle('owned', st.isPro);
+    this.dom.proBtn.hidden = !!st.portal;
     this.renderPro();
     this.updateTorchButton();
 
@@ -406,7 +408,7 @@ export class LastTileGame {
       btn.disabled = !this.torchUsable();
     } else if (!this.videoTorchUsed) {
       this.dom.torchTitle.textContent = i18n.t('torchVideoTitle');
-      this.dom.torchSub.textContent = st.native ? i18n.t('torchVideoSub') : i18n.t('torchSub');
+      this.dom.torchSub.textContent = st.native || st.portal === 'crazygames' ? i18n.t('torchVideoSub') : i18n.t('torchSub');
       btn.disabled = !this.torchUsable() || !rewardAvailable();
     } else {
       btn.style.display = 'none';
