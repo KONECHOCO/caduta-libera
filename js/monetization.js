@@ -22,7 +22,7 @@ import {
 } from '@capacitor-community/admob';
 import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
 
-export const PRO_PRODUCT_ID = 'lasttile.pro';
+export const PRO_PRODUCT_ID = 'trap10_pro';
 
 const native = Capacitor.isNativePlatform();
 const platform = Capacitor.getPlatform();
