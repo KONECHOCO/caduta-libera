@@ -68,7 +68,9 @@ function requestAd(type) {
     sdk.ad.requestAd(type, {
       adStarted: () => { if (!wasMuted) sound.toggleMute(); },
       adFinished: () => { if (!wasMuted && sound.isMuted) sound.toggleMute(); resolve(true); },
-      adError: () => { if (!wasMuted && sound.isMuted) sound.toggleMute(); resolve(false); }
+      // Nessun video disponibile (Basic launch con annunci disattivati, nessun riempimento): il premio resta valido,
+      // un pulsante premio che non fa nulla è motivo di rifiuto per CrazyGames
+      adError: () => { if (!wasMuted && sound.isMuted) sound.toggleMute(); resolve(type === 'rewarded'); }
     });
   });
 }
@@ -82,12 +84,12 @@ export async function trackAdAction() {
 }
 
 export function rewardAvailable() {
-  return PORTAL !== 'crazygames' || state.adsReady;
+  return true;
 }
 
-/** Torcia extra: video premio su CrazyGames, gratis su itch.io. */
+/** Torcia extra: video premio su CrazyGames (gratis se il video non è disponibile), gratis su itch.io. */
 export async function earnReward() {
-  if (PORTAL !== 'crazygames') return true;
+  if (PORTAL !== 'crazygames' || !state.adsReady) return true;
   return requestAd('rewarded');
 }
 
